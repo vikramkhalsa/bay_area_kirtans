@@ -5,14 +5,18 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.format.DateUtils;
+import android.util.Log;
 import android.util.Xml;
 import android.view.View;
 import android.webkit.WebView;
+import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,13 +27,18 @@ import org.xml.sax.InputSource;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -39,18 +48,32 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 
 public class MainActivity extends AppCompatActivity {
 
     public String site = "http://www.isangat.org";
+    private ArrayList<program> Programs =new ArrayList<program>();
+    ArrayList<String> temp = new ArrayList<String>();
+    ArrayAdapter<String> adapter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        //Just for testing, allow network access in the main thread
+        //NEVER use this is productive code
+        StrictMode.ThreadPolicy policy = new StrictMode.
+                ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
         super.onCreate(savedInstanceState);
 
         // display the GUI defined in the activity_first.xml file
         setContentView(R.layout.activity_main);
 
+        final Context vtc = this;
 
         Switch sw = (Switch) findViewById(R.id.switch1);
 
@@ -60,10 +83,14 @@ public class MainActivity extends AppCompatActivity {
                 String val = "";
                 if (isChecked) {
                     val = "True";
-                    site = "http://ekhalsa.com/programs.php";
+                    site = "http://ekhalsa.com/m/";
+                    new webTask(vtc).execute(site);
+
                 } else {
                     site = "http://www.isangat.org";
                     val = "false";
+                    new webTask(vtc).execute(site);
+
                 }
                 SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = prefs.edit();
@@ -93,6 +120,11 @@ public class MainActivity extends AppCompatActivity {
         //Date now = new Date();
         //String time = (String) DateUtils.getRelativeDateTimeString(this, now.getTime(), DateUtils.HOUR_IN_MILLIS, DateUtils.WEEK_IN_MILLIS,0);
         //Toast.makeText(MainActivity.this, time, Toast.LENGTH_LONG).show();
+        ListView listview = (ListView) findViewById(R.id.listView1);
+
+
+        adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,temp);
+        listview.setAdapter(adapter);
 
         //If there is internet, update/download the page
         if (wifi.isConnected()) {
@@ -106,13 +138,73 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     /*
      * called when the update page button is clicked
      * @param v the View which triggered the method call: should refer to the button "enter"
      */
     public void enter(View v) {
-        Toast.makeText(MainActivity.this, "Loading Page from Web", Toast.LENGTH_SHORT).show();
-        new webTask(this).execute(site);
+      //  Toast.makeText(MainActivity.this, "Loading Page from Web", Toast.LENGTH_SHORT).show();
+        //new webTask(this).execute(site);
+
+        URL url = null;
+        try {
+            url = new URL("http://www.isangat.org/json.php");
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            //set up some things on the connection
+            //urlConnection.setRequestProperty("User-Agent", USERAGENT);  //if you are not sure of user agent just set choice=0
+            urlConnection.setRequestMethod("GET");
+            urlConnection.setDoOutput(true);
+            urlConnection.connect();
+
+            InputStream inputStream = urlConnection.getInputStream();
+
+            StringBuilder builder = new StringBuilder();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                builder.append(line);
+            }
+            SimpleDateFormat sdf = new SimpleDateFormat();
+            sdf.applyPattern("yyyy-MM-dd HH:mm:ss");
+
+
+            try{
+                JSONObject obj = new JSONObject(builder.toString());
+                JSONArray programs  = obj.getJSONArray("programs");
+                for(int i = 0; i < programs.length();i++) {
+                    JSONObject program1 = programs.getJSONObject(i);
+                    program temp_prog = new program();
+                    temp_prog.id = program1.getInt("id");
+                    temp_prog.title = program1.getString("title");
+                    temp_prog.subtitle = program1.getString("subtitle");
+                    temp_prog.address = program1.getString("address");
+                    temp_prog.phone = program1.getString("phone");
+                    temp_prog.startDate = sdf.parse(program1.getString("sd"));
+                    temp_prog.startDate = sdf.parse(program1.getString("ed"));
+
+                    //Programs.add(temp_prog);
+                    adapter.add(temp_prog.title);
+
+                  //  Toast.makeText(getBaseContext(), temp_prog.subtitle, Toast.LENGTH_SHORT);
+                }
+
+
+            } catch (Exception e) {
+            e.printStackTrace();
+             }
+
+            }  catch (MalformedURLException e) {
+            e.printStackTrace();
+            } catch (ProtocolException e) {
+            e.printStackTrace();
+            } catch (IOException e) {
+            e.printStackTrace();
+            }
+        //URL url = new URL("http://ekhalsa.com/programs.php");
+        //create the new connection
+
 
 
     }
@@ -159,6 +251,20 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(getBaseContext(), "Could not load file" + ex.getMessage(), Toast.LENGTH_LONG).show();
 
         }
+    }
+
+    public class program {
+
+        program(){
+
+        }
+        public int id;
+        public Date startDate;
+        public Date endDate;
+        public String title;
+        public String subtitle;
+        public String address;
+        public String phone;
     }
 
     public class webTask extends AsyncTask<String, Integer, String> {
