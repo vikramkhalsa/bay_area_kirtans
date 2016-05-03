@@ -9,13 +9,18 @@ import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.util.Xml;
+import android.view.LayoutInflater;
+import android.view.TextureView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -58,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<program> Programs =new ArrayList<program>();
     ArrayList<String> temp = new ArrayList<String>();
     ArrayAdapter<String> adapter = null;
+    CustomArrayAdapter cadapter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,8 +129,9 @@ public class MainActivity extends AppCompatActivity {
         ListView listview = (ListView) findViewById(R.id.listView1);
 
 
-        adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,temp);
-        listview.setAdapter(adapter);
+       // adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,temp);
+        cadapter = new CustomArrayAdapter(this, R.layout.simplelistitem, Programs);
+        listview.setAdapter(cadapter);
 
         //If there is internet, update/download the page
         if (wifi.isConnected()) {
@@ -173,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
             try{
                 JSONObject obj = new JSONObject(builder.toString());
                 JSONArray programs  = obj.getJSONArray("programs");
+
                 for(int i = 0; i < programs.length();i++) {
                     JSONObject program1 = programs.getJSONObject(i);
                     program temp_prog = new program();
@@ -182,19 +190,23 @@ public class MainActivity extends AppCompatActivity {
                     temp_prog.address = program1.getString("address");
                     temp_prog.phone = program1.getString("phone");
                     temp_prog.startDate = sdf.parse(program1.getString("sd"));
-                    temp_prog.startDate = sdf.parse(program1.getString("ed"));
+                    temp_prog.endDate = sdf.parse(program1.getString("ed"));
+                    cadapter.add(temp_prog);
+                    }
 
-                    //Programs.add(temp_prog);
-                    adapter.add(temp_prog.title);
 
-                  //  Toast.makeText(getBaseContext(), temp_prog.subtitle, Toast.LENGTH_SHORT);
-                }
+
+
+
+                    //cadapter.notifyDataSetChanged();
+
+                    //  Toast.makeText(getBaseContext(), temp_prog.subtitle, Toast.LENGTH_SHORT);
+
 
 
             } catch (Exception e) {
-            e.printStackTrace();
+                e.printStackTrace();
              }
-
             }  catch (MalformedURLException e) {
             e.printStackTrace();
             } catch (ProtocolException e) {
@@ -253,9 +265,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    static class  ViewHolder{
+        TextView title;
+        TextView subtitle;
+    }
     public class program {
 
         program(){
+            title = "test";
+            subtitle = "testsub";
 
         }
         public int id;
@@ -347,6 +365,58 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private class CustomArrayAdapter extends ArrayAdapter<program>{
+
+
+        private ArrayList<program> list;
+        Context context;
+        int resource;
+
+
+        public CustomArrayAdapter(Context context, int textViewResourceId, ArrayList<program> programs){
+            super(context, textViewResourceId, programs);
+            this.list = new ArrayList<program>();
+            this.list.addAll(programs);
+            this.resource = textViewResourceId;
+            this.context = context;
+
+        }
+        @Override
+        public View getView(final int position, View convertView, ViewGroup parent){
+            View programView = convertView;
+
+            if(convertView == null) {
+
+                LayoutInflater vi = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                programView = vi.inflate(resource, null);
+            }
+
+            program pg = getItem(position);
+            if (pg!= null) {
+
+                //VewHolder holder = new ViewHolder();i
+                //LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                //convertView = inflater.inflate(R.layout.simplelistitem, null);
+                TextView title = (TextView) programView.findViewById((R.id.title));
+                TextView subtitle = (TextView) programView.findViewById(((R.id.subtitle)));
+                TextView date = (TextView) programView.findViewById((R.id.date));
+                TextView time = (TextView) programView.findViewById((R.id.time));
+                TextView address = (TextView) programView.findViewById(R.id.address);
+                TextView phone = (TextView) programView.findViewById(R.id.phone);
+
+                title.setText(pg.title);
+                subtitle.setText((pg.subtitle));
+                address.setText((pg.address));
+                phone.setText(pg.phone);
+
+                DateFormat df = new DateFormat();
+                date.setText(df.format("EEE, MMM dd", pg.startDate));
+               time.setText(df.format("hh:mma",pg.startDate) + " to " + df.format("hh:mma",pg.endDate));
+            }
+            return programView;
+
+        }
+    }
 
 
 }
