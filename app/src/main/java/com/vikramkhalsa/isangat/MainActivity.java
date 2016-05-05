@@ -1,9 +1,11 @@
 package com.vikramkhalsa.isangat;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
@@ -194,16 +196,6 @@ public class MainActivity extends AppCompatActivity {
                     cadapter.add(temp_prog);
                     }
 
-
-
-
-
-                    //cadapter.notifyDataSetChanged();
-
-                    //  Toast.makeText(getBaseContext(), temp_prog.subtitle, Toast.LENGTH_SHORT);
-
-
-
             } catch (Exception e) {
                 e.printStackTrace();
              }
@@ -214,11 +206,6 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException e) {
             e.printStackTrace();
             }
-        //URL url = new URL("http://ekhalsa.com/programs.php");
-        //create the new connection
-
-
-
     }
 
     //Reloads the webview with contents from the saved file
@@ -234,26 +221,7 @@ public class MainActivity extends AppCompatActivity {
             while ((c = fin.read()) != -1) {
                 temp = temp + Character.toString((char) c);
             }
-            /*
 
-               XPath xpath = XPathFactory.newInstance().newXPath();
-            String expression = "//tr";
-            InputSource inputSrc = new InputSource(temp);
-            NodeList nodes = (NodeList)xpath.evaluate(expression, inputSrc, XPathConstants.NODESET);
-
-            Toast.makeText(this, "count: " + String.valueOf(nodes.getLength()),Toast.LENGTH_SHORT).show();
-            // if node found
-            if(nodes != null && nodes.getLength() > 0) {
-                //mPeople.clear();
-                int len = nodes.getLength();
-                for(int i = 0; i < len; ++i) {
-                    // query value
-                    Node node = nodes.item(i);
-                    Toast.makeText(this, node.getTextContent(),Toast.LENGTH_SHORT).show();
-                    // mPeople.add(node.getTextContent());
-                }
-            }
-*/
 
             webview1.loadDataWithBaseURL("file:///isangatTemp.html", temp, "text/html", "UTF-8", null);
         } catch (FileNotFoundException ex) {
@@ -404,6 +372,25 @@ public class MainActivity extends AppCompatActivity {
                 TextView address = (TextView) programView.findViewById(R.id.address);
                 TextView phone = (TextView) programView.findViewById(R.id.phone);
 
+                address.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent i = new
+                                Intent(android.content.Intent.ACTION_VIEW,
+                                Uri.parse("http://maps.google.com/?q=" + ((TextView)v).getText()));
+                        startActivity(i);
+                    }
+                });
+
+                phone.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent callIntent = new Intent(Intent.ACTION_DIAL);
+                        callIntent.setData(Uri.parse("tel:"+ ((TextView)v).getText()));
+                        startActivity(callIntent);
+                    }
+                });
+
                 title.setText(pg.title);
                 subtitle.setText((pg.subtitle));
                 address.setText((pg.address));
@@ -411,7 +398,7 @@ public class MainActivity extends AppCompatActivity {
 
                 DateFormat df = new DateFormat();
                 date.setText(df.format("EEE, MMM dd", pg.startDate));
-               time.setText(df.format("hh:mma",pg.startDate) + " to " + df.format("hh:mma",pg.endDate));
+               time.setText(df.format("hh:mma", pg.startDate) + " to " + df.format("hh:mma", pg.endDate));
             }
             return programView;
 
