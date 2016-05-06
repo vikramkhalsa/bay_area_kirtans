@@ -46,9 +46,12 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="15dp"
+            android:textSize="16dp"
             android:text="San Jose Gurdwara Sahib"
-            android:padding="10px" />
+            android:padding="10px"
+            android:textStyle="bold"
+            android:textColor="#343434"
+            android:textIsSelectable="true" />
         <TextView android:id="@+id/address"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -57,7 +60,8 @@
             android:text="3030 Murrillo Ave, San Jose"
             android:clickable="true"
             android:textColor="@drawable/text_color"
-            android:padding="10px" />
+            android:padding="10px"
+            android:textColorHighlight="#9b5200" />
         <TextView android:id="@+id/phone"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -66,6 +70,8 @@
             android:text="408-123-4567"
             android:clickable="true"
             android:textColor="@drawable/text_color"
-            android:padding="10px" />
+            android:padding="10px"
+            android:textColorHighlight="#005b0b"
+            android:textColorLink="#910000" />
     </LinearLayout>
 </LinearLayout>

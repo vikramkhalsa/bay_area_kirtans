@@ -84,6 +84,9 @@ public class MainActivity extends AppCompatActivity {
         final Context vtc = this;
 
         Switch sw = (Switch) findViewById(R.id.switch1);
+        final WebView ekhalsa = (WebView)findViewById(R.id.webView1);
+        final ListView mainList = (ListView)findViewById(R.id.listView1);
+
 
         sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -93,11 +96,16 @@ public class MainActivity extends AppCompatActivity {
                     val = "True";
                     site = "http://ekhalsa.com/m/";
                     new webTask(vtc).execute(site);
+                    ekhalsa.setVisibility(View.VISIBLE);
+                    mainList.setVisibility(View.INVISIBLE);
 
                 } else {
                     site = "http://www.isangat.org";
                     val = "false";
-                    new webTask(vtc).execute(site);
+                    ekhalsa.setVisibility(View.INVISIBLE);
+                    mainList.setVisibility(View.VISIBLE);
+                    //new webTask(vtc).execute(site);
+                    //call other method here
 
                 }
                 SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
@@ -134,11 +142,13 @@ public class MainActivity extends AppCompatActivity {
        // adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,temp);
         cadapter = new CustomArrayAdapter(this, R.layout.simplelistitem, Programs);
         listview.setAdapter(cadapter);
+        GetJSON();
 
         //If there is internet, update/download the page
         if (wifi.isConnected()) {
             Toast.makeText(MainActivity.this, "Loading Page from Web", Toast.LENGTH_SHORT).show();
             new webTask(this).execute(site);
+
         }
         //otherwise just load the page from file
         else {
@@ -147,65 +157,65 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+public void GetJSON(){
 
+    try {
+        URL url = null;
+        url = new URL("http://www.isangat.org/json.php");
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        //set up some things on the connection
+        //urlConnection.setRequestProperty("User-Agent", USERAGENT);  //if you are not sure of user agent just set choice=0
+        urlConnection.setRequestMethod("GET");
+        urlConnection.setDoOutput(true);
+        urlConnection.connect();
+
+        InputStream inputStream = urlConnection.getInputStream();
+
+        StringBuilder builder = new StringBuilder();
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            builder.append(line);
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat();
+        sdf.applyPattern("yyyy-MM-dd HH:mm:ss");
+
+        try{
+            JSONObject obj = new JSONObject(builder.toString());
+            JSONArray programs  = obj.getJSONArray("programs");
+
+            for(int i = 0; i < programs.length();i++) {
+                JSONObject program1 = programs.getJSONObject(i);
+                program temp_prog = new program();
+                temp_prog.id = program1.getInt("id");
+                temp_prog.title = program1.getString("title");
+                temp_prog.subtitle = program1.getString("subtitle");
+                temp_prog.address = program1.getString("address");
+                temp_prog.phone = program1.getString("phone");
+                temp_prog.startDate = sdf.parse(program1.getString("sd"));
+                temp_prog.endDate = sdf.parse(program1.getString("ed"));
+                cadapter.add(temp_prog);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }  catch (MalformedURLException e) {
+        e.printStackTrace();
+    } catch (ProtocolException e) {
+        e.printStackTrace();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
     /*
      * called when the update page button is clicked
      * @param v the View which triggered the method call: should refer to the button "enter"
      */
     public void enter(View v) {
-      //  Toast.makeText(MainActivity.this, "Loading Page from Web", Toast.LENGTH_SHORT).show();
-        //new webTask(this).execute(site);
-
-        URL url = null;
-        try {
-            url = new URL("http://www.isangat.org/json.php");
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            //set up some things on the connection
-            //urlConnection.setRequestProperty("User-Agent", USERAGENT);  //if you are not sure of user agent just set choice=0
-            urlConnection.setRequestMethod("GET");
-            urlConnection.setDoOutput(true);
-            urlConnection.connect();
-
-            InputStream inputStream = urlConnection.getInputStream();
-
-            StringBuilder builder = new StringBuilder();
-
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                builder.append(line);
-            }
-            SimpleDateFormat sdf = new SimpleDateFormat();
-            sdf.applyPattern("yyyy-MM-dd HH:mm:ss");
-
-
-            try{
-                JSONObject obj = new JSONObject(builder.toString());
-                JSONArray programs  = obj.getJSONArray("programs");
-
-                for(int i = 0; i < programs.length();i++) {
-                    JSONObject program1 = programs.getJSONObject(i);
-                    program temp_prog = new program();
-                    temp_prog.id = program1.getInt("id");
-                    temp_prog.title = program1.getString("title");
-                    temp_prog.subtitle = program1.getString("subtitle");
-                    temp_prog.address = program1.getString("address");
-                    temp_prog.phone = program1.getString("phone");
-                    temp_prog.startDate = sdf.parse(program1.getString("sd"));
-                    temp_prog.endDate = sdf.parse(program1.getString("ed"));
-                    cadapter.add(temp_prog);
-                    }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-             }
-            }  catch (MalformedURLException e) {
-            e.printStackTrace();
-            } catch (ProtocolException e) {
-            e.printStackTrace();
-            } catch (IOException e) {
-            e.printStackTrace();
-            }
+       Toast.makeText(MainActivity.this, "Loading Page from Web", Toast.LENGTH_SHORT).show();
+        new webTask(this).execute(site);
     }
 
     //Reloads the webview with contents from the saved file
