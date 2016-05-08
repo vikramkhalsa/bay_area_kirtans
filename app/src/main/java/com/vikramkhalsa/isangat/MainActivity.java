@@ -61,7 +61,7 @@ import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
 
-    public String site = "http://www.isangat.org";
+    public String site = "http://www.ekhalsa.com/m";
     private ArrayList<program> Programs =new ArrayList<program>();
     ArrayList<String> temp = new ArrayList<String>();
     ArrayAdapter<String> adapter = null;
@@ -94,22 +94,22 @@ public class MainActivity extends AppCompatActivity {
                 String val = "";
                 if (isChecked) {
                     val = "True";
-                    site = "http://ekhalsa.com/m/";
-                    new webTask(vtc).execute(site);
+                   // site = "http://ekhalsa.com/m/";
                     ekhalsa.setVisibility(View.VISIBLE);
                     mainList.setVisibility(View.INVISIBLE);
 
                 } else {
-                    site = "http://www.isangat.org";
+                    //site = "http://www.isangat.org";
                     val = "false";
                     ekhalsa.setVisibility(View.INVISIBLE);
                     mainList.setVisibility(View.VISIBLE);
+
                     //new webTask(vtc).execute(site);
                     //call other method here
 
                 }
                 SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = prefs.edit();
+               SharedPreferences.Editor editor = prefs.edit();
                 editor.putString("site", val);
                 editor.commit();
             }
@@ -142,20 +142,54 @@ public class MainActivity extends AppCompatActivity {
        // adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,temp);
         cadapter = new CustomArrayAdapter(this, R.layout.simplelistitem, Programs);
         listview.setAdapter(cadapter);
-        GetJSON();
 
         //If there is internet, update/download the page
         if (wifi.isConnected()) {
-            Toast.makeText(MainActivity.this, "Loading Page from Web", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Loading data from Web", Toast.LENGTH_SHORT).show();
             new webTask(this).execute(site);
+            GetJSON();
 
         }
         //otherwise just load the page from file
         else {
             Toast.makeText(MainActivity.this, "Loading Page from File", Toast.LENGTH_SHORT).show();
             loadPage();
+
+            if (prefs.contains("json")) {
+                PutJSON(prefs.getString("json", new JSONObject().toString()));
+            }
+
+
         }
     }
+
+    public void PutJSON(String jsonStr){
+        SimpleDateFormat sdf = new SimpleDateFormat();
+        sdf.applyPattern("yyyy-MM-dd HH:mm:ss");
+
+        try{
+            JSONObject obj = new JSONObject(jsonStr);
+            JSONArray programs  = obj.getJSONArray("programs");
+
+            cadapter.clear();
+            for(int i = 0; i < programs.length();i++) {
+                JSONObject program1 = programs.getJSONObject(i);
+                program temp_prog = new program();
+                temp_prog.id = program1.getInt("id");
+                temp_prog.title = program1.getString("title");
+                temp_prog.subtitle = program1.getString("subtitle");
+                temp_prog.address = program1.getString("address");
+                temp_prog.phone = program1.getString("phone");
+                temp_prog.startDate = sdf.parse(program1.getString("sd"));
+                temp_prog.endDate = sdf.parse(program1.getString("ed"));
+                cadapter.add(temp_prog);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 
 public void GetJSON(){
 
@@ -178,29 +212,14 @@ public void GetJSON(){
         while ((line = reader.readLine()) != null) {
             builder.append(line);
         }
-        SimpleDateFormat sdf = new SimpleDateFormat();
-        sdf.applyPattern("yyyy-MM-dd HH:mm:ss");
 
-        try{
-            JSONObject obj = new JSONObject(builder.toString());
-            JSONArray programs  = obj.getJSONArray("programs");
+        SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("json", builder.toString());
+        editor.commit();
 
-            for(int i = 0; i < programs.length();i++) {
-                JSONObject program1 = programs.getJSONObject(i);
-                program temp_prog = new program();
-                temp_prog.id = program1.getInt("id");
-                temp_prog.title = program1.getString("title");
-                temp_prog.subtitle = program1.getString("subtitle");
-                temp_prog.address = program1.getString("address");
-                temp_prog.phone = program1.getString("phone");
-                temp_prog.startDate = sdf.parse(program1.getString("sd"));
-                temp_prog.endDate = sdf.parse(program1.getString("ed"));
-                cadapter.add(temp_prog);
-            }
+        PutJSON(builder.toString());
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }  catch (MalformedURLException e) {
         e.printStackTrace();
     } catch (ProtocolException e) {
@@ -214,7 +233,8 @@ public void GetJSON(){
      * @param v the View which triggered the method call: should refer to the button "enter"
      */
     public void enter(View v) {
-       Toast.makeText(MainActivity.this, "Loading Page from Web", Toast.LENGTH_SHORT).show();
+       Toast.makeText(MainActivity.this, "Loading Data from Web", Toast.LENGTH_SHORT).show();
+        GetJSON();
         new webTask(this).execute(site);
     }
 
