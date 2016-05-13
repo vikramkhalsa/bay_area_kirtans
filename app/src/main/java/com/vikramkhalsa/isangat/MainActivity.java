@@ -120,7 +120,18 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
         TextView textview = (TextView) findViewById(R.id.textView2);
         if (prefs.contains("date")) {
-            textview.setText("Last Updated " + prefs.getString("date", "None"));
+            try {
+                Calendar cal = Calendar.getInstance();
+
+                Date now = new Date();
+                CharSequence timeString;
+                timeString = DateUtils.getRelativeDateTimeString(this, prefs.getLong("date", now.getTime()), DateUtils.MINUTE_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0);
+
+                textview.setText("Last Updated " + timeString);
+
+            } catch (Exception ex) {
+
+            }
         }
 
         //Check if last load date exists in prefs, if so, show it in the text view
@@ -138,18 +149,26 @@ public class MainActivity extends AppCompatActivity {
         //Toast.makeText(MainActivity.this, time, Toast.LENGTH_LONG).show();
         ListView listview = (ListView) findViewById(R.id.listView1);
 
+        //TextView header = new TextView(this);
+        //header.setHeight(100);
+        //header.setText("Keertan Programs from isangat.org");
+        LayoutInflater inflater = getLayoutInflater();
+        ViewGroup header = (ViewGroup) inflater.inflate(R.layout.listheader, listview, false);
+        listview.addHeaderView(header);
+
 
        // adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,temp);
         cadapter = new CustomArrayAdapter(this, R.layout.simplelistitem, Programs);
         listview.setAdapter(cadapter);
 
         //If there is internet, update/download the page
-        if (wifi.isConnected()) {
+       if (wifi.isConnected()) {
             Toast.makeText(MainActivity.this, "Loading data from Web", Toast.LENGTH_SHORT).show();
             new webTask(this).execute(site);
-            GetJSON();
+            new jsonTask(this).execute();
+            //GetJSON();
 
-        }
+       }
         //otherwise just load the page from file
         else {
             Toast.makeText(MainActivity.this, "Loading Page from File", Toast.LENGTH_SHORT).show();
@@ -171,17 +190,23 @@ public class MainActivity extends AppCompatActivity {
             JSONObject obj = new JSONObject(jsonStr);
             JSONArray programs  = obj.getJSONArray("programs");
 
+            //JSONArray programs  = new JSONArray(jsonStr);
             cadapter.clear();
             for(int i = 0; i < programs.length();i++) {
                 JSONObject program1 = programs.getJSONObject(i);
                 program temp_prog = new program();
-                temp_prog.id = program1.getInt("id");
-                temp_prog.title = program1.getString("title");
-                temp_prog.subtitle = program1.getString("subtitle");
-                temp_prog.address = program1.getString("address");
-                temp_prog.phone = program1.getString("phone");
-                temp_prog.startDate = sdf.parse(program1.getString("sd"));
-                temp_prog.endDate = sdf.parse(program1.getString("ed"));
+                try {
+                    temp_prog.id = program1.getInt("id");
+                    temp_prog.title = program1.getString("title");
+                    temp_prog.subtitle = program1.getString("subtitle");
+                    temp_prog.address = program1.getString("address");
+                    temp_prog.phone = program1.getString("phone");
+                    temp_prog.startDate = sdf.parse(program1.getString("sd"));
+                    temp_prog.endDate = sdf.parse(program1.getString("ed"));
+                }
+                catch(Exception ex){
+                    ex.printStackTrace();
+                }
                 cadapter.add(temp_prog);
             }
 
@@ -195,6 +220,7 @@ public void GetJSON(){
 
     try {
         URL url = null;
+       // url = new URL("http://www.vikramkhalsa.com/kirtanapp/test.php");
         url = new URL("http://www.isangat.org/json.php");
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         //set up some things on the connection
@@ -234,7 +260,7 @@ public void GetJSON(){
      */
     public void enter(View v) {
        Toast.makeText(MainActivity.this, "Loading Data from Web", Toast.LENGTH_SHORT).show();
-        GetJSON();
+        new jsonTask(this).execute();
         new webTask(this).execute(site);
     }
 
@@ -270,17 +296,14 @@ public void GetJSON(){
     public class program {
 
         program(){
-            title = "test";
-            subtitle = "testsub";
-
         }
-        public int id;
-        public Date startDate;
-        public Date endDate;
-        public String title;
-        public String subtitle;
-        public String address;
-        public String phone;
+        public int id = 0;
+        public Date startDate = new Date();
+        public Date endDate = new Date();
+        public String title = "";
+        public String subtitle = "";
+        public String address = "";
+        public String phone = "";
     }
 
     public class webTask extends AsyncTask<String, Integer, String> {
@@ -328,7 +351,7 @@ public void GetJSON(){
                 ret = "success";
 
             } catch (Exception exception) {
-                ret = exception.getMessage();
+                ret = "ERROR:" + exception.getMessage();
             } finally {
                 return ret;
             }
@@ -352,13 +375,80 @@ public void GetJSON(){
                 //String time = cal.getTime().toString();
                 SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
                 SharedPreferences.Editor editor = prefs.edit();
-                editor.putString("date", timeString.toString());
+                editor.putLong("date", now.getTime());
                 editor.commit();
 
                 textview.setText("Last Updated " + timeString);
                 loadPage();
             } else {
                 Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+
+    public class jsonTask extends AsyncTask<String, Integer, String> {
+
+        private Context mContext;
+        public jsonTask (Context context) {
+            mContext = context;
+        }
+
+        protected String doInBackground(String... temp) {
+            String ret = "";
+            try {
+                URL url = null;
+                // url = new URL("http://www.vikramkhalsa.com/kirtanapp/test.php");
+                url = new URL("http://www.isangat.org/json.php");
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                //set up some things on the connection
+                //urlConnection.setRequestProperty("User-Agent", USERAGENT);  //if you are not sure of user agent just set choice=0
+                urlConnection.setRequestMethod("GET");
+                urlConnection.setDoOutput(true);
+                urlConnection.connect();
+
+                InputStream inputStream = urlConnection.getInputStream();
+
+                StringBuilder builder = new StringBuilder();
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    builder.append(line);
+                }
+
+                SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString("json", builder.toString());
+                editor.commit();
+
+                ret= builder.toString();
+
+            }  catch (MalformedURLException e) {
+                ret = "ERROR:" + e.getMessage();
+                e.printStackTrace();
+            } catch (ProtocolException e) {
+                ret = "ERROR:" + e.getMessage();
+                e.printStackTrace();
+            } catch (IOException e){
+            ret = "ERROR:" + e.getMessage();
+                e.printStackTrace();
+            } finally {
+                return ret;
+            }
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+            //setProgressPercent(progress[0]);
+        }
+
+        protected void onPostExecute(String result) {
+
+            if (result.contains("ERROR")) {
+                Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+            }
+            else {
+                PutJSON(result);
             }
         }
     }

@@ -4,11 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/list_item_color"
-    android:elevation="8dp"
     android:paddingLeft="5dp"
     android:paddingRight="5dp"
     android:paddingTop="15dp"
-    android:paddingBottom="15dp">
+    android:paddingBottom="15dp"
+    android:clickable="false"
+    android:focusable="false"
+    android:focusableInTouchMode="false"
+    android:outlineProvider="paddedBounds"
+    android:showDividers="middle">
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
@@ -43,7 +47,8 @@
             android:textColor="#323232"
             android:textSize="20dp"
             android:text="Aasa Ki Vaar"
-            android:padding="10px" />
+            android:padding="10px"
+            android:textIsSelectable="true"/>
         <TextView android:id="@+id/subtitle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
