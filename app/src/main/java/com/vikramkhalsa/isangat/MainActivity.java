@@ -7,32 +7,24 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.text.Html;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
-import android.util.Log;
-import android.util.Xml;
 import android.view.LayoutInflater;
-import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -49,14 +41,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
-
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
+import java.util.Locale;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -161,12 +146,13 @@ public class MainActivity extends AppCompatActivity {
         cadapter = new CustomArrayAdapter(this, R.layout.simplelistitem, Programs);
         listview.setAdapter(cadapter);
 
+
+
         //If there is internet, update/download the page
        if (wifi.isConnected()) {
             Toast.makeText(MainActivity.this, "Loading data from Web", Toast.LENGTH_SHORT).show();
             new webTask(this).execute(site);
             new jsonTask(this).execute();
-            //GetJSON();
 
        }
         //otherwise just load the page from file
@@ -187,10 +173,10 @@ public class MainActivity extends AppCompatActivity {
         sdf.applyPattern("yyyy-MM-dd HH:mm:ss");
 
         try{
-            JSONObject obj = new JSONObject(jsonStr);
-            JSONArray programs  = obj.getJSONArray("programs");
+            //JSONObject obj = new JSONObject(jsonStr);
+            //JSONArray programs  = obj.getJSONArray("programs");
 
-            //JSONArray programs  = new JSONArray(jsonStr);
+            JSONArray programs  = new JSONArray(jsonStr);
             cadapter.clear();
             for(int i = 0; i < programs.length();i++) {
                 JSONObject program1 = programs.getJSONObject(i);
@@ -203,57 +189,21 @@ public class MainActivity extends AppCompatActivity {
                     temp_prog.phone = program1.getString("phone");
                     temp_prog.startDate = sdf.parse(program1.getString("sd"));
                     temp_prog.endDate = sdf.parse(program1.getString("ed"));
+                    temp_prog.source = program1.getString("source");
                 }
                 catch(Exception ex){
                     ex.printStackTrace();
                 }
                 cadapter.add(temp_prog);
             }
+            cadapter.filter("akj");
+            //cadapter.getFilter().filter("vsk");
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-
-public void GetJSON(){
-
-    try {
-        URL url = null;
-       // url = new URL("http://www.vikramkhalsa.com/kirtanapp/test.php");
-        url = new URL("http://www.isangat.org/json.php");
-        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-        //set up some things on the connection
-        //urlConnection.setRequestProperty("User-Agent", USERAGENT);  //if you are not sure of user agent just set choice=0
-        urlConnection.setRequestMethod("GET");
-        urlConnection.setDoOutput(true);
-        urlConnection.connect();
-
-        InputStream inputStream = urlConnection.getInputStream();
-
-        StringBuilder builder = new StringBuilder();
-
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            builder.append(line);
-        }
-
-        SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("json", builder.toString());
-        editor.commit();
-
-        PutJSON(builder.toString());
-
-    }  catch (MalformedURLException e) {
-        e.printStackTrace();
-    } catch (ProtocolException e) {
-        e.printStackTrace();
-    } catch (IOException e) {
-        e.printStackTrace();
-    }
-}
     /*
      * called when the update page button is clicked
      * @param v the View which triggered the method call: should refer to the button "enter"
@@ -304,6 +254,8 @@ public void GetJSON(){
         public String subtitle = "";
         public String address = "";
         public String phone = "";
+        public String source = "";
+        public String description = "";
     }
 
     public class webTask extends AsyncTask<String, Integer, String> {
@@ -398,8 +350,8 @@ public void GetJSON(){
             String ret = "";
             try {
                 URL url = null;
-                // url = new URL("http://www.vikramkhalsa.com/kirtanapp/test.php");
-                url = new URL("http://www.isangat.org/json.php");
+                 url = new URL("http://www.vikramkhalsa.com/kirtanapp/getprograms.php");
+                //url = new URL("http://www.isangat.org/json.php");
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 //set up some things on the connection
                 //urlConnection.setRequestProperty("User-Agent", USERAGENT);  //if you are not sure of user agent just set choice=0
@@ -453,14 +405,33 @@ public void GetJSON(){
         }
     }
 
-    private class CustomArrayAdapter extends ArrayAdapter<program>{
+    private class CustomArrayAdapter extends ArrayAdapter<program>
+    {
 
 
         private ArrayList<program> list;
         Context context;
         int resource;
 
-
+        public void filter(String charText) {
+            charText = charText.toLowerCase(Locale.getDefault());
+            ArrayList<program> tempList = (ArrayList<program>)Programs.clone();
+            Programs.clear();
+            if (charText.length() == 0) {
+                Programs.addAll(tempList);
+            }
+            else
+            {
+                for (program p : tempList)
+                {
+                    if (p.source.contains(charText))
+                    {
+                        Programs.add(p);
+                    }
+                }
+            }
+            notifyDataSetChanged();
+        }
         public CustomArrayAdapter(Context context, int textViewResourceId, ArrayList<program> programs){
             super(context, textViewResourceId, programs);
             this.list = new ArrayList<program>();
@@ -491,6 +462,7 @@ public void GetJSON(){
                 TextView time = (TextView) programView.findViewById((R.id.time));
                 TextView address = (TextView) programView.findViewById(R.id.address);
                 TextView phone = (TextView) programView.findViewById(R.id.phone);
+                TextView source = (TextView) programView.findViewById(R.id.source);
 
                 address.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -519,6 +491,7 @@ public void GetJSON(){
                 DateFormat df = new DateFormat();
                 date.setText(df.format("EEE, MMM dd", pg.startDate));
                time.setText(df.format("hh:mma", pg.startDate) + " to " + df.format("hh:mma", pg.endDate));
+                source.setText(pg.source);
             }
             return programView;
 

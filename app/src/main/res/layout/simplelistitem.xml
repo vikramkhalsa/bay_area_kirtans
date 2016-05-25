@@ -70,15 +70,24 @@
             android:padding="10px"
             android:textColorHighlight="#9b5200" />
         <TextView android:id="@+id/phone"
-            android:layout_width="fill_parent"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="15dp"
+        android:text="408-123-4567"
+        android:clickable="true"
+        android:textColor="@drawable/text_color"
+        android:padding="10px"
+        android:textColorHighlight="#005b0b"
+        android:textColorLink="#910000" />
+        <TextView android:id="@+id/source"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textSize="15dp"
-            android:text="408-123-4567"
+            android:textSize="10dp"
+            android:text="source"
             android:clickable="true"
             android:textColor="@drawable/text_color"
-            android:padding="10px"
-            android:textColorHighlight="#005b0b"
-            android:textColorLink="#910000" />
+            android:padding="1px" />
     </LinearLayout>
 </LinearLayout>
