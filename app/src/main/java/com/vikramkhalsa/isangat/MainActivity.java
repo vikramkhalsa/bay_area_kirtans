@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -213,22 +214,6 @@ public class MainActivity extends AppCompatActivity {
        Toast.makeText(MainActivity.this, "Loading Data from Web", Toast.LENGTH_SHORT).show();
         new jsonTask(this).execute();
         new webTask(this).execute(site);
-    }
-
-    public void AddToCalendar(){
-        program prog1 = Programs.get(0);
-        if (prog1 != null) {
-            Intent intent = new Intent(Intent.ACTION_INSERT)
-                    .setData(CalendarContract.Events.CONTENT_URI)
-                    .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, prog1.startDate.getTime())
-                    .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, prog1.endDate.getTime())
-                    .putExtra(CalendarContract.Events.TITLE, prog1.title)
-                    .putExtra(CalendarContract.Events.DESCRIPTION, prog1.subtitle)
-                    .putExtra(CalendarContract.Events.EVENT_LOCATION, prog1.address)
-                    .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
-            //.putExtra(Intent.EXTRA_EMAIL, "rowan@example.com,trevor@example.com");
-            startActivity(intent);
-        }
     }
 
     public void filter(View v){
@@ -461,6 +446,21 @@ public class MainActivity extends AppCompatActivity {
             this.context = context;
 
         }
+
+        private void AddToCalendar(program prog1){
+            if (prog1 != null) {
+                Intent intent = new Intent(Intent.ACTION_INSERT)
+                        .setData(CalendarContract.Events.CONTENT_URI)
+                        .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, prog1.startDate.getTime())
+                        .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, prog1.endDate.getTime())
+                        .putExtra(CalendarContract.Events.TITLE, prog1.title)
+                        .putExtra(CalendarContract.Events.DESCRIPTION, prog1.subtitle)
+                        .putExtra(CalendarContract.Events.EVENT_LOCATION, prog1.address)
+                        .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
+                //.putExtra(Intent.EXTRA_EMAIL, "rowan@example.com,trevor@example.com");
+                startActivity(intent);
+            }
+        }
         @Override
         public View getView(final int position, View convertView, ViewGroup parent){
             View programView = convertView;
@@ -471,7 +471,7 @@ public class MainActivity extends AppCompatActivity {
                 programView = vi.inflate(resource, null);
             }
 
-            program pg = getItem(position);
+            final program pg = getItem(position);
             if (pg!= null) {
 
                 //VewHolder holder = new ViewHolder();i
@@ -485,12 +485,14 @@ public class MainActivity extends AppCompatActivity {
                 TextView phone = (TextView) programView.findViewById(R.id.phone);
                 TextView source = (TextView) programView.findViewById(R.id.source);
 
+                ImageButton add2calbtn = (ImageButton) programView.findViewById(R.id.calBtn);
+
                 address.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         Intent i = new
                                 Intent(android.content.Intent.ACTION_VIEW,
-                                Uri.parse("http://maps.google.com/?q=" + ((TextView)v).getText()));
+                                Uri.parse("http://maps.google.com/?q=" + ((TextView) v).getText()));
                         startActivity(i);
                     }
                 });
@@ -499,10 +501,18 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         Intent callIntent = new Intent(Intent.ACTION_DIAL);
-                        callIntent.setData(Uri.parse("tel:"+ ((TextView)v).getText()));
+                        callIntent.setData(Uri.parse("tel:" + ((TextView) v).getText()));
                         startActivity(callIntent);
                     }
                 });
+
+                add2calbtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        AddToCalendar(pg);
+                    }
+                });
+
 
                 title.setText(pg.title);
                 subtitle.setText((pg.subtitle));

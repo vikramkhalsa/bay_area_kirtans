@@ -13,11 +13,11 @@
     android:focusableInTouchMode="false"
     android:outlineProvider="paddedBounds"
     android:showDividers="middle">
+
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="118dp"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_weight="1"
         android:paddingLeft="10dp">
     <TextView android:id="@+id/date"
         android:layout_width="fill_parent"
@@ -32,6 +32,18 @@
             android:layout_weight="1"
             android:textSize="15dp"
             android:text="3:00pm" />
+
+        <ImageButton
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/calBtn"
+            android:layout_weight="2.21"
+            android:src="@drawable/ic_event_24dp"
+            android:onClick="AddToCal"
+            android:background="#00ffffff"
+            android:cropToPadding="false"
+            android:tint="#595959" />
+
     </LinearLayout>
 
     <LinearLayout
