@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.provider.CalendarContract;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
@@ -181,22 +182,22 @@ public class MainActivity extends AppCompatActivity {
             for(int i = 0; i < programs.length();i++) {
                 JSONObject program1 = programs.getJSONObject(i);
                 program temp_prog = new program();
-                try {
-                    temp_prog.id = program1.getInt("id");
-                    temp_prog.title = program1.getString("title");
-                    temp_prog.subtitle = program1.getString("subtitle");
-                    temp_prog.address = program1.getString("address");
-                    temp_prog.phone = program1.getString("phone");
-                    temp_prog.startDate = sdf.parse(program1.getString("sd"));
-                    temp_prog.endDate = sdf.parse(program1.getString("ed"));
-                    temp_prog.source = program1.getString("source");
-                }
-                catch(Exception ex){
-                    ex.printStackTrace();
-                }
-                cadapter.add(temp_prog);
+                    try {
+                        temp_prog.id = program1.getInt("id");
+                        temp_prog.title = program1.getString("title");
+                        temp_prog.subtitle = program1.getString("subtitle");
+                        temp_prog.address = program1.getString("address");
+                        temp_prog.phone = program1.getString("phone");
+                        temp_prog.startDate = sdf.parse(program1.getString("sd"));
+                        temp_prog.endDate = sdf.parse(program1.getString("ed"));
+                        temp_prog.source = program1.getString("source");
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+
+                    cadapter.add(temp_prog);
             }
-            cadapter.filter("akj");
+            //cadapter.filter("akj");
             //cadapter.getFilter().filter("vsk");
 
         } catch (Exception e) {
@@ -212,6 +213,26 @@ public class MainActivity extends AppCompatActivity {
        Toast.makeText(MainActivity.this, "Loading Data from Web", Toast.LENGTH_SHORT).show();
         new jsonTask(this).execute();
         new webTask(this).execute(site);
+    }
+
+    public void AddToCalendar(){
+        program prog1 = Programs.get(0);
+        if (prog1 != null) {
+            Intent intent = new Intent(Intent.ACTION_INSERT)
+                    .setData(CalendarContract.Events.CONTENT_URI)
+                    .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, prog1.startDate.getTime())
+                    .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, prog1.endDate.getTime())
+                    .putExtra(CalendarContract.Events.TITLE, prog1.title)
+                    .putExtra(CalendarContract.Events.DESCRIPTION, prog1.subtitle)
+                    .putExtra(CalendarContract.Events.EVENT_LOCATION, prog1.address)
+                    .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
+            //.putExtra(Intent.EXTRA_EMAIL, "rowan@example.com,trevor@example.com");
+            startActivity(intent);
+        }
+    }
+
+    public void filter(View v){
+        cadapter.filter("akj");
     }
 
     //Reloads the webview with contents from the saved file
