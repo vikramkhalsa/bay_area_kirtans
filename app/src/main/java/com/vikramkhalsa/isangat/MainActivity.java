@@ -14,6 +14,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -54,6 +57,36 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter<String> adapter = null;
     CustomArrayAdapter cadapter = null;
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+
+        inflater.inflate(R.menu.main_activity_bar, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_akj:
+                cadapter.filter("akj");
+                // User chose the "Settings" item, show the app settings UI...
+                return true;
+
+            case R.id.action_vsk:
+                cadapter.filter("vsk");
+                // User chose the "Favorite" action, mark the current item
+                // as a favorite...
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -356,7 +389,7 @@ public class MainActivity extends AppCompatActivity {
             String ret = "";
             try {
                 URL url = null;
-                 url = new URL("http://www.vikramkhalsa.com/kirtanapp/getprograms.php");
+                url = new URL("http://www.vikramkhalsa.com/kirtanapp/getprograms.php");
                 //url = new URL("http://www.isangat.org/json.php");
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 //set up some things on the connection
@@ -419,9 +452,13 @@ public class MainActivity extends AppCompatActivity {
         Context context;
         int resource;
 
+        private ArrayList<program>  allPrograms = null;
         public void filter(String charText) {
             charText = charText.toLowerCase(Locale.getDefault());
-            ArrayList<program> tempList = (ArrayList<program>)Programs.clone();
+            if (allPrograms == null) {
+                allPrograms = (ArrayList) Programs.clone();
+            }
+            ArrayList<program> tempList = (ArrayList<program>)allPrograms.clone();
             Programs.clear();
             if (charText.length() == 0) {
                 Programs.addAll(tempList);

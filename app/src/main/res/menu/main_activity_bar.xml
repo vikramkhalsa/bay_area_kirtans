@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/action_akj"
+        android:title="Filter AKJ"/>
+    <item android:id="@+id/action_vsk"
+        android:title="Filter VSK"/>
+</menu>

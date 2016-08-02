@@ -38,7 +38,8 @@ android:padding="0dp">
         android:layout_alignTop="@+id/switch1"
         android:layout_toLeftOf="@+id/switch1"
         android:layout_toStartOf="@+id/switch1"
-        android:onClick="filter" />
+        android:onClick="filter"
+        android:visibility="gone" />
 
     <WebView
     android:layout_width="fill_parent"
