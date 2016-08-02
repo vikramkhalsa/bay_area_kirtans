@@ -3,88 +3,79 @@
 xmlns:tools="http://schemas.android.com/tools"
 android:layout_width="match_parent"
 android:layout_height="match_parent"
-tools:context="com.vikramkhalsa.isangat.MainActivity">
+tools:context="com.vikramkhalsa.isangat.MainActivity"><![CDATA[
 android:padding="0dp">
 
-<Button
-    android:layout_width="wrap_content"
-    android:layout_height="50dp"
-    android:text="Refresh"
-    android:id="@+id/button"
-    android:onClick="enter"
-    android:layout_alignParentBottom="true"
-    android:layout_alignParentRight="true"
-    android:layout_alignParentEnd="true" />
 
-<TextView
-    android:layout_width="wrap_content"
-    android:layout_height="fill_parent"
-    android:text="Never Loaded"
-    android:id="@+id/textView2"
-    android:padding="5dp"
-    android:layout_alignParentBottom="true"
-    android:layout_alignParentLeft="true"
-    android:layout_alignParentStart="true"
-    android:layout_alignTop="@+id/button"
-    android:layout_toStartOf="@+id/button2"
-    android:layout_toLeftOf="@+id/button2" />
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="New Button"
-        android:id="@+id/button2"
-        android:layout_alignTop="@+id/switch1"
-        android:layout_toLeftOf="@+id/switch1"
-        android:layout_toStartOf="@+id/switch1"
-        android:onClick="filter"
-        android:visibility="gone" />
 
-    <WebView
-    android:layout_width="fill_parent"
-    android:layout_height="200dp"
-    android:id="@+id/webView1"
-    android:layout_alignParentRight="true"
-    android:layout_alignParentEnd="true"
-    android:layout_above="@+id/button"
-    android:layout_alignParentTop="true"
-    android:longClickable="false"
-    android:visibility="invisible" />
 
-    <Switch
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/switch1"
-        android:backgroundTint="#5e5e5e"
-        android:enabled="true"
-        android:visibility="visible"
-        android:layout_below="@+id/textView"
-        android:layout_toLeftOf="@+id/button"
-        android:layout_toStartOf="@+id/button"></Switch>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Source"
-        android:id="@+id/textView"
-        android:layout_toStartOf="@+id/button"
-        android:layout_alignTop="@+id/textView2"
-        android:layout_toLeftOf="@+id/button" />
 
-    <ListView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/listView1"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:visibility="visible"
-        android:layout_alignParentTop="true"
-        android:layout_alignBottom="@+id/webView1"
-        android:headerDividersEnabled="true"
-        android:dividerHeight="1dp"
-        android:divider="#b0b0b0" />
+
+
+
+
+
+
+    ]]>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ListView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:id="@+id/listView1"
+            android:visibility="visible"
+            android:headerDividersEnabled="true"
+            android:dividerHeight="1dp"
+            android:divider="#b0b0b0"
+            android:layout_weight="1" />
+
+        <WebView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/webView1"
+            android:longClickable="false"
+        android:visibility="gone"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Never Loaded"
+            android:id="@+id/textView2"
+            android:padding="5dp"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical" />
+
+            <Switch
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/switch1"
+                android:backgroundTint="#5e5e5e"
+                android:enabled="true"
+                android:visibility="gone"/>
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/imageButton"
+                android:src="@drawable/ic_refresh_24dp"
+                android:onClick="enter"
+                android:layout_gravity="center_vertical" />
+        </LinearLayout>
+
+    </LinearLayout>
+
 
 </RelativeLayout>
 

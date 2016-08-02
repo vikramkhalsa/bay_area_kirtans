@@ -68,19 +68,26 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Switch sw = (Switch) findViewById(R.id.switch1);
+
         switch (item.getItemId()) {
-            case R.id.action_akj:
-                cadapter.filter("akj");
+            case R.id.action_isangat:
+                sw.setChecked(false);
                 // User chose the "Settings" item, show the app settings UI...
                 return true;
 
-            case R.id.action_vsk:
-                cadapter.filter("vsk");
+            case R.id.action_ekhalsa:
+                sw.setChecked(true);
                 // User chose the "Favorite" action, mark the current item
                 // as a favorite...
                 return true;
-
+            case R.id.action_bvj:
+                sw.setChecked(false);
+                // User chose the "Favorite" action, mark the current item
+                // as a favorite...
+                return true;
             default:
+
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
                 return super.onOptionsItemSelected(item);
@@ -116,12 +123,12 @@ public class MainActivity extends AppCompatActivity {
                     val = "True";
                    // site = "http://ekhalsa.com/m/";
                     ekhalsa.setVisibility(View.VISIBLE);
-                    mainList.setVisibility(View.INVISIBLE);
+                    mainList.setVisibility(View.GONE);
 
                 } else {
                     //site = "http://www.isangat.org";
                     val = "false";
-                    ekhalsa.setVisibility(View.INVISIBLE);
+                    ekhalsa.setVisibility(View.GONE);
                     mainList.setVisibility(View.VISIBLE);
 
                     //new webTask(vtc).execute(site);
