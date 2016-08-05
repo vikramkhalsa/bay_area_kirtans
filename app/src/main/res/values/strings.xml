@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Bay Area Kirtan Programs</string>
+    <string name="siteURL">http://www.isangat.org</string>
 </resources>

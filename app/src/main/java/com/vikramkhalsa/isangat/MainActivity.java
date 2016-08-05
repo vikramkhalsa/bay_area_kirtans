@@ -21,10 +21,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,6 +50,7 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
 
     public String site = "http://www.ekhalsa.com/m";
+    public String site2 = "http://www.isangat.org/json.php";
     private ArrayList<program> Programs =new ArrayList<program>();
     ArrayList<String> temp = new ArrayList<String>();
     ArrayAdapter<String> adapter = null;
@@ -68,32 +67,40 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Switch sw = (Switch) findViewById(R.id.switch1);
-
+        WebView ekhalsa = (WebView) findViewById(R.id.webView1);
+        ListView mainList = (ListView) findViewById(R.id.listView1);
         switch (item.getItemId()) {
             case R.id.action_isangat:
-                sw.setChecked(false);
-                // User chose the "Settings" item, show the app settings UI...
-                return true;
-
+                //sw.setChecked(false);
+                site2 = "http://www.isangat.org/json.php";
+                new jsonTask(this).execute(site2);
+                mainList.setVisibility(View.VISIBLE);
+                ekhalsa.setVisibility(View.GONE);
+                break;
             case R.id.action_ekhalsa:
-                sw.setChecked(true);
-                // User chose the "Favorite" action, mark the current item
-                // as a favorite...
-                return true;
+                ekhalsa.setVisibility(View.VISIBLE);
+                mainList.setVisibility(View.GONE);
+                site2 = "http://www.ekhalsa.com";
+                break;
             case R.id.action_bvj:
-                sw.setChecked(false);
-                // User chose the "Favorite" action, mark the current item
-                // as a favorite...
-                return true;
+                site2 = "http://www.vikramkhalsa.com/kirtanapp/getprograms.php";
+                new jsonTask(this).execute(site2);
+                mainList.setVisibility(View.VISIBLE);
+                ekhalsa.setVisibility(View.GONE);
+                break;
             default:
-
-                // If we got here, the user's action was not recognized.
-                // Invoke the superclass to handle it.
-                return super.onOptionsItemSelected(item);
-
+                int i = 0;
+                break;
         }
+        // If we got here, the user's action was not recognized.
+        // Invoke the superclass to handle it.
+        SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("site", site2);
+        editor.commit();
+        return true;
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -109,39 +116,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         final Context vtc = this;
-
-        Switch sw = (Switch) findViewById(R.id.switch1);
-        final WebView ekhalsa = (WebView)findViewById(R.id.webView1);
-        final ListView mainList = (ListView)findViewById(R.id.listView1);
-
-
-        sw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                String val = "";
-                if (isChecked) {
-                    val = "True";
-                   // site = "http://ekhalsa.com/m/";
-                    ekhalsa.setVisibility(View.VISIBLE);
-                    mainList.setVisibility(View.GONE);
-
-                } else {
-                    //site = "http://www.isangat.org";
-                    val = "false";
-                    ekhalsa.setVisibility(View.GONE);
-                    mainList.setVisibility(View.VISIBLE);
-
-                    //new webTask(vtc).execute(site);
-                    //call other method here
-
-                }
-                SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
-               SharedPreferences.Editor editor = prefs.edit();
-                editor.putString("site", val);
-                editor.commit();
-            }
-        });
-
 
         //Check if last load date exists in prefs, if so, show it in the text view
         SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
@@ -161,9 +135,23 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        final WebView ekhalsa = (WebView)findViewById(R.id.webView1);
+        final ListView mainList = (ListView)findViewById(R.id.listView1);
         //Check if last load date exists in prefs, if so, show it in the text view
         if (prefs.contains("site")) {
-            sw.setChecked(Boolean.parseBoolean(prefs.getString("site", "false")));
+
+            site2 = prefs.getString("site", "false");
+            if (site2.contains("ekhalsa")){
+                ekhalsa.setVisibility(View.VISIBLE);
+                mainList.setVisibility(View.GONE);
+                site2= "http://www.isangat.org/json";
+            }
+
+            else {
+                mainList.setVisibility(View.VISIBLE);
+                ekhalsa.setVisibility(View.GONE);
+
+            }
         }
 
         //Check if there is wifi
@@ -188,13 +176,11 @@ public class MainActivity extends AppCompatActivity {
         cadapter = new CustomArrayAdapter(this, R.layout.simplelistitem, Programs);
         listview.setAdapter(cadapter);
 
-
-
         //If there is internet, update/download the page
        if (wifi.isConnected()) {
             Toast.makeText(MainActivity.this, "Loading data from Web", Toast.LENGTH_SHORT).show();
             new webTask(this).execute(site);
-            new jsonTask(this).execute();
+            new jsonTask(this).execute(site2);
 
        }
         //otherwise just load the page from file
@@ -215,10 +201,14 @@ public class MainActivity extends AppCompatActivity {
         sdf.applyPattern("yyyy-MM-dd HH:mm:ss");
 
         try{
-            //JSONObject obj = new JSONObject(jsonStr);
-            //JSONArray programs  = obj.getJSONArray("programs");
+            JSONArray programs = null;
+            if (site2.contains("vikram")){
+                programs  = new JSONArray(jsonStr);
+            }else {
+                JSONObject obj = new JSONObject(jsonStr);
+                 programs = obj.getJSONArray("programs");
+            }
 
-            JSONArray programs  = new JSONArray(jsonStr);
             cadapter.clear();
             for(int i = 0; i < programs.length();i++) {
                 JSONObject program1 = programs.getJSONObject(i);
@@ -231,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
                         temp_prog.phone = program1.getString("phone");
                         temp_prog.startDate = sdf.parse(program1.getString("sd"));
                         temp_prog.endDate = sdf.parse(program1.getString("ed"));
-                        temp_prog.source = program1.getString("source");
+                       // temp_prog.source = program1.getString("source");
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
@@ -252,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void enter(View v) {
        Toast.makeText(MainActivity.this, "Loading Data from Web", Toast.LENGTH_SHORT).show();
-        new jsonTask(this).execute();
+        new jsonTask(this).execute(site2);
         new webTask(this).execute(site);
     }
 
@@ -396,7 +386,8 @@ public class MainActivity extends AppCompatActivity {
             String ret = "";
             try {
                 URL url = null;
-                url = new URL("http://www.vikramkhalsa.com/kirtanapp/getprograms.php");
+                url = new URL(temp[0]);
+                //url = new URL("http://www.vikramkhalsa.com/kirtanapp/getprograms.php");
                 //url = new URL("http://www.isangat.org/json.php");
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 //set up some things on the connection
