@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
         android:text="isangat.org"
-        android:id="@+id/textView3"
+        android:id="@+id/headertext"
         android:textSize="20dp"
         android:paddingTop="10dp"
         android:padding="10dp"

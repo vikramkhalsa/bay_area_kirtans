@@ -4,6 +4,6 @@
         android:title="iSangat"/>
     <item android:id="@+id/action_ekhalsa"
         android:title="eKhalsa"/>
-    <item android:id="@+id/action_bvj"
-        android:title="BVJ Programs"/>
+    <item android:id="@+id/action_vsk"
+        android:title="San Jose GW"/>
 </menu>

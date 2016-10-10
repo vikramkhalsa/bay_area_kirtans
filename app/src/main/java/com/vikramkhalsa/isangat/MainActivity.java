@@ -48,14 +48,19 @@ import java.util.Locale;
 
 
 public class MainActivity extends AppCompatActivity {
-
-    public String site = "http://www.ekhalsa.com/m";
-    public String site2 = "http://www.isangat.org/json.php";
+    //Ekhalsa URL
+    public String ekhalsa_site = "http://www.ekhalsa.com/m";
+    //changing URL
+    public String site = "http://www.isangat.org/json.php";
+    //List of programs
     private ArrayList<program> Programs =new ArrayList<program>();
-    ArrayList<String> temp = new ArrayList<String>();
-    ArrayAdapter<String> adapter = null;
+    //ArrayList<String> temp = new ArrayList<String>();
+    //ArrayAdapter<String> adapter = null;
+
     CustomArrayAdapter cadapter = null;
 
+    public TextView headerText;
+//used to create options menu
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -64,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-
+//change site url OR visibility based on what gets selected in the menu
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         WebView ekhalsa = (WebView) findViewById(R.id.webView1);
@@ -72,19 +77,19 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.action_isangat:
                 //sw.setChecked(false);
-                site2 = "http://www.isangat.org/json.php";
-                new jsonTask(this).execute(site2);
+                site = "http://www.isangat.org/json.php";
+                new jsonTask(this).execute(site);
                 mainList.setVisibility(View.VISIBLE);
                 ekhalsa.setVisibility(View.GONE);
                 break;
             case R.id.action_ekhalsa:
+                site = "http://www.ekhalsa.com";
                 ekhalsa.setVisibility(View.VISIBLE);
                 mainList.setVisibility(View.GONE);
-                site2 = "http://www.ekhalsa.com";
                 break;
-            case R.id.action_bvj:
-                site2 = "http://www.vikramkhalsa.com/kirtanapp/getprograms.php";
-                new jsonTask(this).execute(site2);
+            case R.id.action_vsk:
+                site = "http://www.vikramkhalsa.com/kirtanapp/getprograms.php";
+                new jsonTask(this).execute(site);
                 mainList.setVisibility(View.VISIBLE);
                 ekhalsa.setVisibility(View.GONE);
                 break;
@@ -96,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         // Invoke the superclass to handle it.
         SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("site", site2);
+        editor.putString("site", site);
         editor.commit();
         return true;
     }
@@ -123,34 +128,32 @@ public class MainActivity extends AppCompatActivity {
         if (prefs.contains("date")) {
             try {
                 Calendar cal = Calendar.getInstance();
-
                 Date now = new Date();
                 CharSequence timeString;
                 timeString = DateUtils.getRelativeDateTimeString(this, prefs.getLong("date", now.getTime()), DateUtils.MINUTE_IN_MILLIS, DateUtils.WEEK_IN_MILLIS, 0);
-
                 textview.setText("Last Updated " + timeString);
 
             } catch (Exception ex) {
-
+                //don't care?
             }
         }
 
         final WebView ekhalsa = (WebView)findViewById(R.id.webView1);
         final ListView mainList = (ListView)findViewById(R.id.listView1);
-        //Check if last load date exists in prefs, if so, show it in the text view
+        //Check what the last loaded site was
         if (prefs.contains("site")) {
 
-            site2 = prefs.getString("site", "false");
-            if (site2.contains("ekhalsa")){
+            site = prefs.getString("site", "false");
+
+            if (site.contains("ekhalsa")){
                 ekhalsa.setVisibility(View.VISIBLE);
                 mainList.setVisibility(View.GONE);
-                site2= "http://www.isangat.org/json";
+                site = "http://www.isangat.org/json";
             }
 
             else {
                 mainList.setVisibility(View.VISIBLE);
                 ekhalsa.setVisibility(View.GONE);
-
             }
         }
 
@@ -159,18 +162,14 @@ public class MainActivity extends AppCompatActivity {
         NetworkInfo wifi = conManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         NetworkInfo net = conManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
-        //Date now = new Date();
-        //String time = (String) DateUtils.getRelativeDateTimeString(this, now.getTime(), DateUtils.HOUR_IN_MILLIS, DateUtils.WEEK_IN_MILLIS,0);
-        //Toast.makeText(MainActivity.this, time, Toast.LENGTH_LONG).show();
         ListView listview = (ListView) findViewById(R.id.listView1);
-
         //TextView header = new TextView(this);
         //header.setHeight(100);
         //header.setText("Keertan Programs from isangat.org");
         LayoutInflater inflater = getLayoutInflater();
-        ViewGroup header = (ViewGroup) inflater.inflate(R.layout.listheader, listview, false);
+        View header = inflater.inflate(R.layout.listheader, listview, false);
+        headerText = (TextView) header.findViewById(R.id.headertext);
         listview.addHeaderView(header);
-
 
        // adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,temp);
         cadapter = new CustomArrayAdapter(this, R.layout.simplelistitem, Programs);
@@ -179,34 +178,34 @@ public class MainActivity extends AppCompatActivity {
         //If there is internet, update/download the page
        if (wifi.isConnected()) {
             Toast.makeText(MainActivity.this, "Loading data from Web", Toast.LENGTH_SHORT).show();
-            new webTask(this).execute(site);
-            new jsonTask(this).execute(site2);
+            new webTask(this).execute(ekhalsa_site);
+            new jsonTask(this).execute(site);
 
        }
         //otherwise just load the page from file
         else {
-            Toast.makeText(MainActivity.this, "Loading Page from File", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Loading data from cache", Toast.LENGTH_SHORT).show();
             loadPage();
 
             if (prefs.contains("json")) {
                 PutJSON(prefs.getString("json", new JSONObject().toString()));
             }
-
-
         }
     }
 
+    //gets json string and populates programs based on selected site
     public void PutJSON(String jsonStr){
         SimpleDateFormat sdf = new SimpleDateFormat();
         sdf.applyPattern("yyyy-MM-dd HH:mm:ss");
-
         try{
             JSONArray programs = null;
-            if (site2.contains("vikram")){
+            if (site.contains("vikram")){
                 programs  = new JSONArray(jsonStr);
+                headerText.setText("San Jose Gurdwara Programs");
             }else {
                 JSONObject obj = new JSONObject(jsonStr);
                  programs = obj.getJSONArray("programs");
+                headerText.setText("Programs from isangat.org");
             }
 
             cadapter.clear();
@@ -221,31 +220,32 @@ public class MainActivity extends AppCompatActivity {
                         temp_prog.phone = program1.getString("phone");
                         temp_prog.startDate = sdf.parse(program1.getString("sd"));
                         temp_prog.endDate = sdf.parse(program1.getString("ed"));
+                        temp_prog.description = program1.getString("description");
                        // temp_prog.source = program1.getString("source");
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
-
                     cadapter.add(temp_prog);
             }
-            //cadapter.filter("akj");
+            //cadapter.filter("akj"); // in the future, can filter from the same source based on various ..things?
             //cadapter.getFilter().filter("vsk");
-
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     /*
-     * called when the update page button is clicked
+     * called when the update page button is clicked, updates both sources manually
      * @param v the View which triggered the method call: should refer to the button "enter"
      */
     public void enter(View v) {
        Toast.makeText(MainActivity.this, "Loading Data from Web", Toast.LENGTH_SHORT).show();
-        new jsonTask(this).execute(site2);
-        new webTask(this).execute(site);
+        if (site!= ekhalsa_site)
+            new jsonTask(this).execute(site);
+        new webTask(this).execute(ekhalsa_site);
     }
 
+    //filter testing method
     public void filter(View v){
         cadapter.filter("akj");
     }
@@ -256,19 +256,16 @@ public class MainActivity extends AppCompatActivity {
 
             WebView webview1 = (WebView) findViewById(R.id.webView1);
             FileInputStream fin = openFileInput("isangatTemp.html");
-
             int c;
             String temp = "";
 
             while ((c = fin.read()) != -1) {
                 temp = temp + Character.toString((char) c);
             }
-
-
             webview1.loadDataWithBaseURL("file:///isangatTemp.html", temp, "text/html", "UTF-8", null);
         } catch (FileNotFoundException ex) {
             Toast.makeText(getBaseContext(), "File not found, attempting to load from Web.", Toast.LENGTH_LONG).show();
-            new webTask(this).execute("");
+            new webTask(this).execute(ekhalsa_site);
         } catch (Exception ex) {
             Toast.makeText(getBaseContext(), "Could not load file" + ex.getMessage(), Toast.LENGTH_LONG).show();
 
@@ -305,8 +302,7 @@ public class MainActivity extends AppCompatActivity {
             String ret = "";
             try {
 
-                URL url = new URL(temp[0]);
-                //URL url = new URL("http://ekhalsa.com/programs.php");
+                URL url = new URL(temp[0]); //gets url from string array? passed in
                 //create the new connection
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 //set up some things on the connection
@@ -489,7 +485,7 @@ public class MainActivity extends AppCompatActivity {
                         .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, prog1.startDate.getTime())
                         .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, prog1.endDate.getTime())
                         .putExtra(CalendarContract.Events.TITLE, prog1.title)
-                        .putExtra(CalendarContract.Events.DESCRIPTION, prog1.subtitle)
+                        .putExtra(CalendarContract.Events.DESCRIPTION, prog1.subtitle + prog1.description)
                         .putExtra(CalendarContract.Events.EVENT_LOCATION, prog1.address)
                         .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
                 //.putExtra(Intent.EXTRA_EMAIL, "rowan@example.com,trevor@example.com");
@@ -519,6 +515,7 @@ public class MainActivity extends AppCompatActivity {
                 TextView address = (TextView) programView.findViewById(R.id.address);
                 TextView phone = (TextView) programView.findViewById(R.id.phone);
                 TextView source = (TextView) programView.findViewById(R.id.source);
+                TextView description = (TextView programView.findViewById()
 
                 ImageButton add2calbtn = (ImageButton) programView.findViewById(R.id.calBtn);
 
