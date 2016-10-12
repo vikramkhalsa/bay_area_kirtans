@@ -93,6 +93,16 @@
         android:padding="10px"
         android:textColorHighlight="#005b0b"
         android:textColorLink="#910000" />
+        <TextView android:id="@+id/desc"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp"
+            android:text="Details"
+            android:clickable="true"
+            android:textColor="#949494"
+            android:gravity="right"
+            android:paddingRight="10dp"></TextView>
         <TextView android:id="@+id/source"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

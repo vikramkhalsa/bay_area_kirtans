@@ -13,6 +13,7 @@ import android.provider.CalendarContract;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -23,6 +24,7 @@ import android.webkit.WebView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -493,7 +495,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         @Override
-        public View getView(final int position, View convertView, ViewGroup parent){
+        public View getView(final int position, View convertView, final ViewGroup parent){
             View programView = convertView;
 
             if(convertView == null) {
@@ -515,7 +517,7 @@ public class MainActivity extends AppCompatActivity {
                 TextView address = (TextView) programView.findViewById(R.id.address);
                 TextView phone = (TextView) programView.findViewById(R.id.phone);
                 TextView source = (TextView) programView.findViewById(R.id.source);
-                TextView description = (TextView programView.findViewById()
+                //TextView description = (TextView programView.findViewById()
 
                 ImageButton add2calbtn = (ImageButton) programView.findViewById(R.id.calBtn);
 
@@ -537,11 +539,18 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(callIntent);
                     }
                 });
-
+                LayoutInflater vi = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                final View layout = vi.inflate(R.layout.infopopup,(ViewGroup) findViewById(R.id.popup_element));
+                final PopupWindow popupMessage = new PopupWindow(layout,500,350,true);
+                TextView desc = (TextView)layout.findViewById(R.id.desc);
+                popupMessage.setElevation(10);
                 add2calbtn.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        AddToCalendar(pg);
+                        //AddToCalendar(pg);
+
+                        popupMessage.showAtLocation(layout, Gravity.CENTER, 0, 0);
+
                     }
                 });
 
@@ -550,7 +559,7 @@ public class MainActivity extends AppCompatActivity {
                 subtitle.setText((pg.subtitle));
                 address.setText((pg.address));
                 phone.setText(pg.phone);
-
+                desc.setText(pg.description);
                 DateFormat df = new DateFormat();
                 date.setText(df.format("EEE, MMM dd", pg.startDate));
                time.setText(df.format("hh:mma", pg.startDate) + " to " + df.format("hh:mma", pg.endDate));
