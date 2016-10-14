@@ -3,7 +3,6 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/list_item_color"
     android:paddingLeft="5dp"
     android:paddingRight="5dp"
     android:paddingTop="15dp"
@@ -31,20 +30,37 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textSize="15dp"
-            android:text="3:00pm" />
-
-        <ImageButton
-            android:layout_width="40dp"
+            android:text="3:00pm"
+            android:paddingTop="10dp"/>
+        <LinearLayout
+            android:paddingTop="10dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/calBtn"
-            android:src="@drawable/ic_event_24dp"
-            android:onClick="AddToCal"
-            android:background="#00ffffff"
-            android:cropToPadding="true"
-            android:tint="#595959"
-            android:layout_weight="1"
-            android:layout_gravity="center_horizontal" />
-
+            android:paddingBottom="5dp">
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/calBtn"
+                android:src="@drawable/ic_event_24dp"
+                android:onClick="AddToCal"
+                android:background="#00ffffff"
+                android:cropToPadding="true"
+                android:tint="#595959"
+                android:layout_weight="1"
+                android:layout_gravity="center_horizontal" />
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxHeight="24dp"
+                android:id="@+id/descBtn"
+                android:src="@drawable/roundinfobutton"
+                android:onClick="ViewDesc"
+                android:background="#00ffffff"
+                android:cropToPadding="true"
+                android:tint="#595959"
+                android:layout_weight="1"
+                android:layout_gravity="center_horizontal" />
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout
@@ -83,26 +99,17 @@
             android:padding="10px"
             android:textColorHighlight="#9b5200" />
         <TextView android:id="@+id/phone"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textSize="15dp"
+            android:layout_weight="1"
+            android:textSize="15dp"
         android:text="408-123-4567"
         android:clickable="true"
         android:textColor="@drawable/text_color"
         android:padding="10px"
         android:textColorHighlight="#005b0b"
         android:textColorLink="#910000" />
-        <TextView android:id="@+id/desc"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="12dp"
-            android:text="Details"
-            android:clickable="true"
-            android:textColor="#949494"
-            android:gravity="right"
-            android:paddingRight="10dp"></TextView>
+
         <TextView android:id="@+id/source"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
