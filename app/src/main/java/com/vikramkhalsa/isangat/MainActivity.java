@@ -11,16 +11,17 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.provider.CalendarContract;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -61,9 +62,10 @@ public class MainActivity extends AppCompatActivity {
     CustomArrayAdapter cadapter = null;
 
     public TextView headerText;
+    /*
 //used to create options menu
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+   public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
 
         inflater.inflate(R.menu.main_activity_bar, menu);
@@ -105,11 +107,10 @@ public class MainActivity extends AppCompatActivity {
         editor.putString("site", site);
         editor.commit();
         return true;
-    }
+    }*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         //Just for testing, allow network access in the main thread
         //NEVER use this is productive code
         StrictMode.ThreadPolicy policy = new StrictMode.
@@ -122,7 +123,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         final Context vtc = this;
-
+        Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        myToolbar.setTitleTextAppearance(this, R.style.MyTitleTextApperance);
+        //myToolbar.setTitle(Html.fromHtml("<font color=\"#FFFFFF\">" + getString(R.string.app_name) + "</font>"));
+        setSupportActionBar(myToolbar);
         //Check if last load date exists in prefs, if so, show it in the text view
         SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
         TextView textview = (TextView) findViewById(R.id.textView2);
@@ -158,9 +162,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        //Check if there is wifi
+        //Check if there is wifi or internet
         ConnectivityManager conManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo wifi = conManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        //NetworkInfo wifi = conManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
         NetworkInfo net = conManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
         ListView listview = (ListView) findViewById(R.id.listView1);
@@ -177,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
         listview.setAdapter(cadapter);
 
         //If there is internet, update/download the page
-       if (wifi.isConnected()) {
+       if (net.isConnected()) {
             Toast.makeText(MainActivity.this, "Loading data from Web", Toast.LENGTH_SHORT).show();
             new webTask(this).execute(ekhalsa_site);
             new jsonTask(this).execute(site);
@@ -192,6 +196,48 @@ public class MainActivity extends AppCompatActivity {
                 PutJSON(prefs.getString("json", new JSONObject().toString()));
             }
         }
+
+        String[] locations = new String[]{"iSangat.org", "eKhalsa.com", "San Jose Gurdwara"};
+        final DrawerLayout mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        final ListView mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        final ArrayList<String> list = new ArrayList<String>();
+        for (int i = 0; i < locations.length; ++i) {
+            list.add(locations[i]);
+        }
+        // Set the adapter for the list view
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,list);
+        mDrawerList.setAdapter(arrayAdapter);
+        // Set the list's click listener
+        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                switch (position) {
+                    case 0:
+                        //sw.setChecked(false);
+                        site = "http://www.isangat.org/json.php";
+                        new jsonTask(parent.getContext()).execute(site);
+                        mainList.setVisibility(View.VISIBLE);
+                        ekhalsa.setVisibility(View.GONE);
+                        break;
+                    case 1:
+                        site = "http://www.ekhalsa.com";
+                        ekhalsa.setVisibility(View.VISIBLE);
+                        mainList.setVisibility(View.GONE);
+                        break;
+                    case 2:
+                        site = "http://www.vikramkhalsa.com/kirtanapp/getprograms.php";
+                        new jsonTask(parent.getContext()).execute(site);
+                        mainList.setVisibility(View.VISIBLE);
+                        ekhalsa.setVisibility(View.GONE);
+                        break;
+                    default:
+                        int i = 0;
+                        break;
+            }
+                mDrawerList.setItemChecked(position, true);
+                mDrawerLayout.closeDrawer(GravityCompat.START);
+        }});
+
     }
 
     //gets json string and populates programs based on selected site

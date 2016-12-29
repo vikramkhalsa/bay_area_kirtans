@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/action_isangat"
-        android:title="iSangat"/>
-    <item android:id="@+id/action_ekhalsa"
-        android:title="eKhalsa"/>
-    <item android:id="@+id/action_vsk"
-        android:title="San Jose GW"/>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <!-- "Mark Favorite", should appear as action button if possible -->
+    <item
+        android:id="@+id/action_favorite"
+        android:icon="@drawable/roundinfobutton"
+        android:title="Source"
+        app:showAsAction="ifRoom"/>
+
 </menu>
