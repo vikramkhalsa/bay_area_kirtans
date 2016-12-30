@@ -25,7 +25,29 @@ android:padding="0dp">
             android:elevation="4dp"
             style="@style/MyActionBarTheme"
             android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/imageButton1"
+                android:src="@drawable/ic_menu_24dp"
+                android:onClick="showMenu"
+                android:layout_gravity="center_vertical"
+                android:background="#00ffffff"
+                android:tint="#ffffff" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bay Area Kirtan Programs"
+                android:id="@+id/textView3"
+                android:textSize="20dp"
+                android:padding="10dp"
+                android:textColor="@color/colorLight"></TextView>
+        </android.support.v7.widget.Toolbar>
+
+
 
         <ListView
             android:layout_width="fill_parent"
@@ -73,7 +95,8 @@ android:padding="0dp">
                 android:id="@+id/imageButton"
                 android:src="@drawable/ic_refresh_24dp"
                 android:onClick="enter"
-                android:layout_gravity="center_vertical" />
+                android:layout_gravity="center_vertical"
+                android:background="#00ffffff" />
         </LinearLayout>
 
     </LinearLayout>

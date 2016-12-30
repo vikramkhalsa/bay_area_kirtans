@@ -13,11 +13,14 @@ import android.os.StrictMode;
 import android.provider.CalendarContract;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -62,6 +65,11 @@ public class MainActivity extends AppCompatActivity {
     CustomArrayAdapter cadapter = null;
 
     public TextView headerText;
+
+    private ActionBarDrawerToggle mDrawerToggle;
+    private DrawerLayout mDrawerLayout;
+
+
     /*
 //used to create options menu
     @Override
@@ -71,11 +79,11 @@ public class MainActivity extends AppCompatActivity {
         inflater.inflate(R.menu.main_activity_bar, menu);
         return super.onCreateOptionsMenu(menu);
     }
-
+*/
 //change site url OR visibility based on what gets selected in the menu
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        WebView ekhalsa = (WebView) findViewById(R.id.webView1);
+       /* WebView ekhalsa = (WebView) findViewById(R.id.webView1);
         ListView mainList = (ListView) findViewById(R.id.listView1);
         switch (item.getItemId()) {
             case R.id.action_isangat:
@@ -105,9 +113,18 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString("site", site);
-        editor.commit();
+        editor.commit();*/
+        mDrawerLayout.openDrawer(GravityCompat.START);
+        //if (mDrawerToggle.onOptionsItemSelected(item)) {
+          //  return true;
+        //}
+
         return true;
-    }*/
+    }
+
+    public void showMenu(View view){
+        mDrawerLayout.openDrawer(GravityCompat.START);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,10 +140,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         final Context vtc = this;
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         Toolbar myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         myToolbar.setTitleTextAppearance(this, R.style.MyTitleTextApperance);
-        //myToolbar.setTitle(Html.fromHtml("<font color=\"#FFFFFF\">" + getString(R.string.app_name) + "</font>"));
         setSupportActionBar(myToolbar);
+       //mDrawerToggle.setDrawerIndicatorEnabled(true);
+
+       ActionBar ab = getSupportActionBar();
+        ab.setDisplayShowTitleEnabled(false);
+
         //Check if last load date exists in prefs, if so, show it in the text view
         SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
         TextView textview = (TextView) findViewById(R.id.textView2);
@@ -236,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
             }
                 mDrawerList.setItemChecked(position, true);
                 mDrawerLayout.closeDrawer(GravityCompat.START);
-        }});
+            }});
 
     }
 
