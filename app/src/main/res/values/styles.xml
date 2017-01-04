@@ -10,7 +10,7 @@
     </style>
 
     <style name="MyActionBarTheme" parent="@style/ThemeOverlay.AppCompat.Light">
-        <item name="android:background">@color/colorPrimaryDark</item>
+        <item name="android:background">@color/colorPrimary</item>
     </style>
 
     <style name="MyTitleTextApperance" parent="@android:style/TextAppearance.Medium">

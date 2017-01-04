@@ -228,6 +228,8 @@ public class MainActivity extends AppCompatActivity {
         final String[] locations = new String[]{"iSangat.org", "San Jose Gurdwara Sahib", "Fremont Gurdwara Sahib", "eKhalsa.com"};
         final DrawerLayout mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         final ListView mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        View navHeader = inflater.inflate(R.layout.navlistheader, mDrawerList,false);
+        mDrawerList.addHeaderView(navHeader);
         final ArrayList<String> list = new ArrayList<String>();
         for (int i = 0; i < locations.length; ++i) {
             list.add(locations[i]);
