@@ -49,7 +49,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -68,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
-
+    private String location = "";
 
     /*
 //used to create options menu
@@ -150,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
         ab.setDisplayShowTitleEnabled(false);
 
         //Check if last load date exists in prefs, if so, show it in the text view
-        SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
+        final SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
         TextView textview = (TextView) findViewById(R.id.textView2);
         if (prefs.contains("date")) {
             try {
@@ -175,19 +174,25 @@ public class MainActivity extends AppCompatActivity {
             if (site.contains("ekhalsa")){
                 ekhalsa.setVisibility(View.VISIBLE);
                 mainList.setVisibility(View.GONE);
-                site = "http://www.isangat.org/json";
             }
-
             else {
                 mainList.setVisibility(View.VISIBLE);
                 ekhalsa.setVisibility(View.GONE);
             }
+            site = "http://www.isangat.org/json.php"; //temporarily always
         }
 
         //Check if there is wifi or internet
-        ConnectivityManager conManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        //ConnectivityManager conManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         //NetworkInfo wifi = conManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        NetworkInfo net = conManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+        //NetworkInfo net = conManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE)
+
+        ConnectivityManager cm =
+                (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
 
         ListView listview = (ListView) findViewById(R.id.listView1);
         //TextView header = new TextView(this);
@@ -197,13 +202,14 @@ public class MainActivity extends AppCompatActivity {
         View header = inflater.inflate(R.layout.listheader, listview, false);
         headerText = (TextView) header.findViewById(R.id.headertext);
         listview.addHeaderView(header);
-
+        //String lastHeader = prefs.getString("header", "iSangat.org");
+        //headerText.setText(lastHeader);
        // adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,temp);
         cadapter = new CustomArrayAdapter(this, R.layout.simplelistitem, Programs);
         listview.setAdapter(cadapter);
 
         //If there is internet, update/download the page
-       if (net.isConnected()) {
+       if (isConnected) {
             Toast.makeText(MainActivity.this, "Loading data from Web", Toast.LENGTH_SHORT).show();
             new webTask(this).execute(ekhalsa_site);
             new jsonTask(this).execute(site);
@@ -219,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        String[] locations = new String[]{"iSangat.org", "eKhalsa.com", "San Jose Gurdwara"};
+        final String[] locations = new String[]{"iSangat.org", "San Jose Gurdwara Sahib", "Fremont Gurdwara Sahib", "eKhalsa.com"};
         final DrawerLayout mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         final ListView mDrawerList = (ListView) findViewById(R.id.left_drawer);
         final ArrayList<String> list = new ArrayList<String>();
@@ -233,29 +239,46 @@ public class MainActivity extends AppCompatActivity {
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+               headerText.setText(locations[position]);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString("header", locations[position]);
+                mainList.setVisibility(View.VISIBLE);
+                ekhalsa.setVisibility(View.GONE);
                 switch (position) {
                     case 0:
                         //sw.setChecked(false);
                         site = "http://www.isangat.org/json.php";
                         new jsonTask(parent.getContext()).execute(site);
-                        mainList.setVisibility(View.VISIBLE);
-                        ekhalsa.setVisibility(View.GONE);
+                        location = "";
                         break;
                     case 1:
-                        site = "http://www.ekhalsa.com";
-                        ekhalsa.setVisibility(View.VISIBLE);
-                        mainList.setVisibility(View.GONE);
+                        site = "http://www.vikramkhalsa.com/kirtanapp/getprograms.php";
+                        new jsonTask(parent.getContext()).execute(site);
+                        location = "Jose";
+                        //cadapter.filter("Jose");
                         break;
                     case 2:
                         site = "http://www.vikramkhalsa.com/kirtanapp/getprograms.php";
                         new jsonTask(parent.getContext()).execute(site);
-                        mainList.setVisibility(View.VISIBLE);
-                        ekhalsa.setVisibility(View.GONE);
+                        location = "Fremont";
+                        //cadapter.filter("Fremont");
+                        break;
+                    case 3:
+                        site = ekhalsa_site;
+                        ekhalsa.setVisibility(View.VISIBLE);
+                        mainList.setVisibility(View.GONE);
+                        break;
+                    case 4:
+                        site = "http://www.vikramkhalsa.com/kirtanapp/getprograms.php";
+                        new jsonTask(parent.getContext()).execute(site);
+                        location="";
                         break;
                     default:
                         int i = 0;
                         break;
             }
+                editor.putString("site", site);
+                editor.commit();
                 mDrawerList.setItemChecked(position, true);
                 mDrawerLayout.closeDrawer(GravityCompat.START);
             }});
@@ -270,11 +293,11 @@ public class MainActivity extends AppCompatActivity {
             JSONArray programs = null;
             if (site.contains("vikram")){
                 programs  = new JSONArray(jsonStr);
-                headerText.setText("San Jose Gurdwara Programs");
+                //headerText.setText("San Jose Gurdwara Programs");
             }else {
                 JSONObject obj = new JSONObject(jsonStr);
                  programs = obj.getJSONArray("programs");
-                headerText.setText("Programs from isangat.org");
+               // headerText.setText("Programs from isangat.org");
             }
 
             cadapter.clear();
@@ -296,7 +319,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                     cadapter.add(temp_prog);
             }
-            //cadapter.filter("akj"); // in the future, can filter from the same source based on various ..things?
+            if (!location.isEmpty()) {
+                cadapter.filter(location); // in the future, can filter from the same source based on various ..things?
+            }
             //cadapter.getFilter().filter("vsk");
         } catch (Exception e) {
             e.printStackTrace();
@@ -430,7 +455,6 @@ public class MainActivity extends AppCompatActivity {
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putLong("date", now.getTime());
                 editor.commit();
-
                 textview.setText("Last Updated " + timeString);
                 loadPage();
             } else {
@@ -470,11 +494,12 @@ public class MainActivity extends AppCompatActivity {
                 while ((line = reader.readLine()) != null) {
                     builder.append(line);
                 }
-
-                SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putString("json", builder.toString());
-                editor.commit();
+                if (!site.contains("vikram")) {//temporarily only cache isangat programs. because vsk programs need to be filtered onload too
+                    SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putString("json", builder.toString());
+                    editor.commit();
+                }
 
                 ret= builder.toString();
 
@@ -517,7 +542,7 @@ public class MainActivity extends AppCompatActivity {
 
         private ArrayList<program>  allPrograms = null;
         public void filter(String charText) {
-            charText = charText.toLowerCase(Locale.getDefault());
+            //charText = charText.toLowerCase(Locale.getDefault());
             if (allPrograms == null) {
                 allPrograms = (ArrayList) Programs.clone();
             }
@@ -530,7 +555,7 @@ public class MainActivity extends AppCompatActivity {
             {
                 for (program p : tempList)
                 {
-                    if (p.source.contains(charText))
+                    if (p.subtitle.contains(charText))
                     {
                         Programs.add(p);
                     }
