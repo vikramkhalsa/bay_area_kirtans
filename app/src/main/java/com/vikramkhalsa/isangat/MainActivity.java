@@ -235,45 +235,42 @@ public class MainActivity extends AppCompatActivity {
             list.add(locations[i]);
         }
         // Set the adapter for the list view
-        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,list);
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_activated_1,list);
         mDrawerList.setAdapter(arrayAdapter);
         // Set the list's click listener
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-               headerText.setText(locations[position]);
+               headerText.setText(locations[position-1]);
                 SharedPreferences.Editor editor = prefs.edit();
-                editor.putString("header", locations[position]);
+                editor.putString("header", locations[position-1]);
                 mainList.setVisibility(View.VISIBLE);
                 ekhalsa.setVisibility(View.GONE);
                 switch (position) {
                     case 0:
+                        return;
+                    case 1:
                         //sw.setChecked(false);
                         site = "http://www.isangat.org/json.php";
                         new jsonTask(parent.getContext()).execute(site);
                         location = "";
                         break;
-                    case 1:
+                    case 2:
                         site = "http://www.vikramkhalsa.com/kirtanapp/getprograms.php";
                         new jsonTask(parent.getContext()).execute(site);
                         location = "Jose";
                         //cadapter.filter("Jose");
                         break;
-                    case 2:
+                    case 3:
                         site = "http://www.vikramkhalsa.com/kirtanapp/getprograms.php";
                         new jsonTask(parent.getContext()).execute(site);
                         location = "Fremont";
                         //cadapter.filter("Fremont");
                         break;
-                    case 3:
+                    case 4:
                         site = ekhalsa_site;
                         ekhalsa.setVisibility(View.VISIBLE);
                         mainList.setVisibility(View.GONE);
-                        break;
-                    case 4:
-                        site = "http://www.vikramkhalsa.com/kirtanapp/getprograms.php";
-                        new jsonTask(parent.getContext()).execute(site);
-                        location="";
                         break;
                     default:
                         int i = 0;
