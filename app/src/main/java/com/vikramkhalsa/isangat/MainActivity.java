@@ -256,13 +256,13 @@ public class MainActivity extends AppCompatActivity {
                         location = "";
                         break;
                     case 2:
-                        site = "http://www.vikramkhalsa.com/kirtanapp/getprograms.php";
+                        site = "http://www.sikh.events/getprograms.php";
                         new jsonTask(parent.getContext()).execute(site);
                         location = "Jose";
                         //cadapter.filter("Jose");
                         break;
                     case 3:
-                        site = "http://www.vikramkhalsa.com/kirtanapp/getprograms.php";
+                        site = "http://www.sikh.events/getprograms.php";
                         new jsonTask(parent.getContext()).execute(site);
                         location = "Fremont";
                         //cadapter.filter("Fremont");
@@ -290,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
         sdf.applyPattern("yyyy-MM-dd HH:mm:ss");
         try{
             JSONArray programs = null;
-            if (site.contains("vikram")){
+            if (site.contains("sikh")){
                 programs  = new JSONArray(jsonStr);
                 //headerText.setText("San Jose Gurdwara Programs");
             }else {
@@ -493,7 +493,7 @@ public class MainActivity extends AppCompatActivity {
                 while ((line = reader.readLine()) != null) {
                     builder.append(line);
                 }
-                if (!site.contains("vikram")) {//temporarily only cache isangat programs. because vsk programs need to be filtered onload too
+                if (!site.contains("sikh")) {//temporarily only cache isangat programs. because vsk programs need to be filtered onload too
                     SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = prefs.edit();
                     editor.putString("json", builder.toString());
