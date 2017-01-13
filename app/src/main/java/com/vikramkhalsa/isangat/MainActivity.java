@@ -60,11 +60,11 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<program> Programs =new ArrayList<program>();
     //ArrayList<String> temp = new ArrayList<String>();
     //ArrayAdapter<String> adapter = null;
-
+    public static ArrayAdapter<String> locationAdapter;
     CustomArrayAdapter cadapter = null;
 
     public TextView headerText;
-
+    public static ArrayList<String> list;
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
     private String location = "";
@@ -225,25 +225,29 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        final String[] locations = new String[]{"iSangat.org", "San Jose Gurdwara Sahib", "Fremont Gurdwara Sahib", "eKhalsa.com"};
+        final String[] locations = new String[]{"iSangat.org", "eKhalsa.com"};//"San Jose Gurdwara Sahib", "Fremont Gurdwara Sahib", "eKhalsa.com"};
         final DrawerLayout mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         final ListView mDrawerList = (ListView) findViewById(R.id.left_drawer);
         View navHeader = inflater.inflate(R.layout.navlistheader, mDrawerList,false);
         mDrawerList.addHeaderView(navHeader);
-        final ArrayList<String> list = new ArrayList<String>();
+        list = new ArrayList<String>();
         for (int i = 0; i < locations.length; ++i) {
             list.add(locations[i]);
         }
+
         // Set the adapter for the list view
-        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_activated_1,list);
-        mDrawerList.setAdapter(arrayAdapter);
+        locationAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_activated_1,list);
+        mDrawerList.setAdapter(locationAdapter);
+        new JSONGetter().execute("http://sikh.events/getlocations.php");
+
         // Set the list's click listener
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-               headerText.setText(locations[position-1]);
+                String loc = list.get(position -1);
+                headerText.setText(loc);
                 SharedPreferences.Editor editor = prefs.edit();
-                editor.putString("header", locations[position-1]);
+                editor.putString("header", loc);
                 mainList.setVisibility(View.VISIBLE);
                 ekhalsa.setVisibility(View.GONE);
                 switch (position) {
@@ -256,31 +260,26 @@ public class MainActivity extends AppCompatActivity {
                         location = "";
                         break;
                     case 2:
-                        site = "http://www.sikh.events/getprograms.php";
-                        new jsonTask(parent.getContext()).execute(site);
-                        location = "Jose";
-                        //cadapter.filter("Jose");
-                        break;
-                    case 3:
-                        site = "http://www.sikh.events/getprograms.php";
-                        new jsonTask(parent.getContext()).execute(site);
-                        location = "Fremont";
-                        //cadapter.filter("Fremont");
-                        break;
-                    case 4:
                         site = ekhalsa_site;
                         ekhalsa.setVisibility(View.VISIBLE);
                         mainList.setVisibility(View.GONE);
                         break;
                     default:
-                        int i = 0;
+                        site = "http://www.sikh.events/getprograms.php";
+                        new jsonTask(parent.getContext()).execute(site);
+                        location = loc;
+                        //cadapter.filter("Jose");
                         break;
-            }
+                   // default:
+                    //    int i = 0;
+                     //   break;
+                }
                 editor.putString("site", site);
                 editor.commit();
                 mDrawerList.setItemChecked(position, true);
                 mDrawerLayout.closeDrawer(GravityCompat.START);
-            }});
+            }
+        });
 
     }
 
