@@ -19,6 +19,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -50,6 +51,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+//isangat - Bay Area Kirtan Programs App
+//Created by Vikram Singh Khalsa (www.VikramKhalsa.com)
 
 public class MainActivity extends AppCompatActivity {
     //Ekhalsa URL
@@ -230,6 +233,8 @@ public class MainActivity extends AppCompatActivity {
         final ListView mDrawerList = (ListView) findViewById(R.id.left_drawer);
         View navHeader = inflater.inflate(R.layout.navlistheader, mDrawerList,false);
         mDrawerList.addHeaderView(navHeader);
+        //View navFooter = inflater.inflate(R.layout.navlistfooter, mDrawerList,false);
+        //mDrawerList.addFooterView(navFooter);
         list = new ArrayList<String>();
         for (int i = 0; i < locations.length; ++i) {
             list.add(locations[i]);
@@ -281,8 +286,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        TextView mLink = (TextView) findViewById(R.id.navfootertext2);
+        if (mLink != null) {
+            mLink.setMovementMethod(LinkMovementMethod.getInstance());
+        }
     }
-
+    static class  ViewHolder{
+        TextView title;
+        TextView subtitle;
+          }
     //gets json string and populates programs based on selected site
     public void PutJSON(String jsonStr){
         SimpleDateFormat sdf = new SimpleDateFormat();
@@ -335,6 +347,7 @@ public class MainActivity extends AppCompatActivity {
         if (site!= ekhalsa_site)
             new jsonTask(this).execute(site);
         new webTask(this).execute(ekhalsa_site);
+        new JSONGetter().execute("http://sikh.events/getlocations.php");
     }
 
     //filter testing method
@@ -364,10 +377,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    static class  ViewHolder{
-        TextView title;
-        TextView subtitle;
-    }
+    //holds details for a program entry
     public class program {
 
         program(){
@@ -383,6 +393,7 @@ public class MainActivity extends AppCompatActivity {
         public String description = "";
     }
 
+    //gets ekhalsa website in webview.. temporary solution untilw e can get json data from them
     public class webTask extends AsyncTask<String, Integer, String> {
 
         private Context mContext;
@@ -461,7 +472,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    //gets json data from vsk or sikh.events website and creates programs
     public class jsonTask extends AsyncTask<String, Integer, String> {
 
         private Context mContext;
@@ -530,6 +541,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //custom array adapter for main listview to assign all properties
     private class CustomArrayAdapter extends ArrayAdapter<program>
     {
 
