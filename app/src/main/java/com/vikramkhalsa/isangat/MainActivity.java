@@ -17,6 +17,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
     //Ekhalsa URL
     public String ekhalsa_site = "http://www.ekhalsa.com/m";
     //changing URL
-    public String site = "http://www.isangat.org/json.php";
+    public String site = "http://www.isangat.org/json2.php";
     //List of programs
     private ArrayList<program> Programs =new ArrayList<program>();
     //ArrayList<String> temp = new ArrayList<String>();
@@ -182,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
                 mainList.setVisibility(View.VISIBLE);
                 ekhalsa.setVisibility(View.GONE);
             }
-            site = "http://www.isangat.org/json.php"; //temporarily always
+            site = "http://www.isangat.org/json2.php"; //temporarily always
         }
 
         //Check if there is wifi or internet
@@ -260,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     case 1:
                         //sw.setChecked(false);
-                        site = "http://www.isangat.org/json.php";
+                        site = "http://www.isangat.org/json2.php";
                         new jsonTask(parent.getContext()).execute(site);
                         location = "";
                         break;
@@ -661,7 +662,7 @@ public class MainActivity extends AppCompatActivity {
                            // popupMessage.showAtLocation(layout, Gravity.CENTER, 0, 0);
                             AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
                             alertDialog.setTitle("Details");
-                            alertDialog.setMessage(pg.description);
+                            alertDialog.setMessage(Html.fromHtml(pg.description.replace("</br>","<br>")));
                             alertDialog.show();
                         }
                     });
