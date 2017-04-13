@@ -39,7 +39,6 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -57,7 +56,7 @@ import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
     //Ekhalsa URL
-    public String ekhalsa_site = "http://www.ekhalsa.com/m";
+   // public String ekhalsa_site = "http://www.ekhalsa.com/m";
     //changing URL
     public String site = "http://www.isangat.org/json2.php";
     //List of programs
@@ -175,14 +174,14 @@ public class MainActivity extends AppCompatActivity {
 
             site = prefs.getString("site", "false");
 
-            if (site.contains("ekhalsa")){
-                ekhalsa.setVisibility(View.VISIBLE);
-                mainList.setVisibility(View.GONE);
-            }
-            else {
+           // if (site.contains("ekhalsa")){
+            //    ekhalsa.setVisibility(View.VISIBLE);
+            //    mainList.setVisibility(View.GONE);
+           // }
+           // else {
                 mainList.setVisibility(View.VISIBLE);
-                ekhalsa.setVisibility(View.GONE);
-            }
+              //  ekhalsa.setVisibility(View.GONE);
+           // }
             site = "http://www.isangat.org/json2.php"; //temporarily always
         }
 
@@ -215,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
         //If there is internet, update/download the page
        if (isConnected) {
             Toast.makeText(MainActivity.this, "Loading data from Web", Toast.LENGTH_SHORT).show();
-            new webTask(this).execute(ekhalsa_site);
+           // new webTask(this).execute(ekhalsa_site);
             new jsonTask(this).execute(site);
 
        }
@@ -229,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        final String[] locations = new String[]{"iSangat.org", "eKhalsa.com"};//"San Jose Gurdwara Sahib", "Fremont Gurdwara Sahib", "eKhalsa.com"};
+        final String[] locations = new String[]{"Sikh.Events", "iSangat.org", "eKhalsa.com",};//"San Jose Gurdwara Sahib", "Fremont Gurdwara Sahib", "eKhalsa.com"};
         final DrawerLayout mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         final ListView mDrawerList = (ListView) findViewById(R.id.left_drawer);
         View navHeader = inflater.inflate(R.layout.navlistheader, mDrawerList,false);
@@ -244,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
         // Set the adapter for the list view
         locationAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_activated_1,list);
         mDrawerList.setAdapter(locationAdapter);
-        new JSONGetter().execute("http://sikh.events/getlocations.php");
+        //new JSONGetter().execute("http://sikh.events/getlocations.php");
 
         // Set the list's click listener
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -255,25 +254,35 @@ public class MainActivity extends AppCompatActivity {
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putString("header", loc);
                 mainList.setVisibility(View.VISIBLE);
-                ekhalsa.setVisibility(View.GONE);
+               // ekhalsa.setVisibility(View.GONE);
                 switch (position) {
                     case 0:
                         return;
                     case 1:
                         //sw.setChecked(false);
+                        site = "http://www.sikh.events/getprograms.php";
+                        new jsonTask(parent.getContext()).execute(site);
+                        location = "";
+                       //
+                        break;
+                    case 2:
                         site = "http://www.isangat.org/json2.php";
                         new jsonTask(parent.getContext()).execute(site);
                         location = "";
+                        //site = ekhalsa_site;
+                        //ekhalsa.setVisibility(View.VISIBLE);
+                        //mainList.setVisibility(View.GONE);
                         break;
-                    case 2:
-                        site = ekhalsa_site;
-                        ekhalsa.setVisibility(View.VISIBLE);
-                        mainList.setVisibility(View.GONE);
+                    case 3:
+                        site = "http://www.sikh.events/getprograms.php?source=ekhalsa";
+                        new jsonTask(parent.getContext()).execute(site);
+                        location = "";
                         break;
                     default:
                         site = "http://www.sikh.events/getprograms.php";
                         new jsonTask(parent.getContext()).execute(site);
-                        location = loc;
+                        location = "";
+                        //temporaily just make this another source rather than splitting by location
                         //cadapter.filter("Jose");
                         break;
                    // default:
@@ -316,14 +325,16 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject program1 = programs.getJSONObject(i);
                 program temp_prog = new program();
                     try {
-                        temp_prog.id = program1.getInt("id");
                         temp_prog.title = program1.getString("title");
                         temp_prog.subtitle = program1.getString("subtitle");
                         temp_prog.address = program1.getString("address");
-                        temp_prog.phone = program1.getString("phone");
+                        if(program1.has("phone"))
+                            temp_prog.phone = program1.getString("phone");
+                        if (program1.has("description"))
+                            temp_prog.description = program1.getString("description");
                         temp_prog.startDate = sdf.parse(program1.getString("sd"));
                         temp_prog.endDate = sdf.parse(program1.getString("ed"));
-                        temp_prog.description = program1.getString("description");
+                        temp_prog.id = program1.getInt("id");
                        // temp_prog.source = program1.getString("source");
                     } catch (Exception ex) {
                         ex.printStackTrace();
@@ -345,10 +356,10 @@ public class MainActivity extends AppCompatActivity {
      */
     public void enter(View v) {
        Toast.makeText(MainActivity.this, "Loading Data from Web", Toast.LENGTH_SHORT).show();
-        if (site!= ekhalsa_site)
+        //if (site!= ekhalsa_site)
             new jsonTask(this).execute(site);
-        new webTask(this).execute(ekhalsa_site);
-        new JSONGetter().execute("http://sikh.events/getlocations.php");
+        //new webTask(this).execute(ekhalsa_site);
+        //new JSONGetter().execute("http://sikh.events/getlocations.php");
     }
 
     //filter testing method
@@ -371,7 +382,7 @@ public class MainActivity extends AppCompatActivity {
             webview1.loadDataWithBaseURL("file:///isangatTemp.html", temp, "text/html", "UTF-8", null);
         } catch (FileNotFoundException ex) {
             Toast.makeText(getBaseContext(), "File not found, attempting to load from Web.", Toast.LENGTH_LONG).show();
-            new webTask(this).execute(ekhalsa_site);
+           // new webTask(this).execute(ekhalsa_site);
         } catch (Exception ex) {
             Toast.makeText(getBaseContext(), "Could not load file" + ex.getMessage(), Toast.LENGTH_LONG).show();
 
@@ -394,6 +405,7 @@ public class MainActivity extends AppCompatActivity {
         public String description = "";
     }
 
+    /*
     //gets ekhalsa website in webview.. temporary solution untilw e can get json data from them
     public class webTask extends AsyncTask<String, Integer, String> {
 
@@ -472,7 +484,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
+*/
     //gets json data from vsk or sikh.events website and creates programs
     public class jsonTask extends AsyncTask<String, Integer, String> {
 

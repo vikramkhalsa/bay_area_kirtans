@@ -4,4 +4,5 @@
     <string name="drawer_open">Open Drawer</string>
     <string name="drawer_close">Close Drawer</string>
     <string name="vsklink"><a href="http:\\vikramkhalsa.com">Created by Vikram Singh Khalsa</a></string>
+    <string name="sikheventslink"><a href="http:\\sikh.events">To submit an event, visit www.Sikh.events</a></string>
 </resources>

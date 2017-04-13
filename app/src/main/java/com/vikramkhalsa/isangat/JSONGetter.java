@@ -42,15 +42,15 @@ class JSONGetter  extends AsyncTask<String, Void, String> {
             while ((line = reader.readLine()) != null) {
                 builder.append(line);
             }
-            ret= builder.toString();
+            ret = builder.toString();
 
-        }  catch (MalformedURLException e) {
+        } catch (MalformedURLException e) {
             ret = "ERROR:" + e.getMessage();
             e.printStackTrace();
         } catch (ProtocolException e) {
             ret = "ERROR:" + e.getMessage();
             e.printStackTrace();
-        } catch (IOException e){
+        } catch (IOException e) {
             ret = "ERROR:" + e.getMessage();
             e.printStackTrace();
         } finally {
@@ -62,17 +62,18 @@ class JSONGetter  extends AsyncTask<String, Void, String> {
     protected void onPostExecute(String result) {
 
         if (result.contains("ERROR")) {
-           // Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
-        }
-        else {
-            result = result.substring(1,result.length()-1);
+            // Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+        } else {
+            result = result.substring(1, result.length() - 1);
             result = result.replace("\"", "");
-            for (String res:result.split(",")) {
+            for (String res : result.split(",")) {
                 //MainActivity.locationAdapter.add(res);
-                MainActivity.list.add(res);
+                if (!MainActivity.list.contains(res)) {
+                    MainActivity.list.add(res);
+                }
+
             }
-
         }
-    }
 
+    }
 }
