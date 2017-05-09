@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
     //Ekhalsa URL
    // public String ekhalsa_site = "http://www.ekhalsa.com/m";
     //changing URL
-    public String site = "http://www.isangat.org/json2.php";
+    public String site = "http://www.sikh.events/getprograms.ph";
     //List of programs
     private ArrayList<program> Programs =new ArrayList<program>();
     //ArrayList<String> temp = new ArrayList<String>();
@@ -167,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        final WebView ekhalsa = (WebView)findViewById(R.id.webView1);
+       // final WebView ekhalsa = (WebView)findViewById(R.id.webView1);
         final ListView mainList = (ListView)findViewById(R.id.listView1);
         //Check what the last loaded site was
         if (prefs.contains("site")) {
@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
                 mainList.setVisibility(View.VISIBLE);
               //  ekhalsa.setVisibility(View.GONE);
            // }
-            site = "http://www.isangat.org/json2.php"; //temporarily always
+           // site = "http://www.isangat.org/json2.php"; //temporarily always
         }
 
         //Check if there is wifi or internet
@@ -205,8 +205,8 @@ public class MainActivity extends AppCompatActivity {
         View header = inflater.inflate(R.layout.listheader, listview, false);
         headerText = (TextView) header.findViewById(R.id.headertext);
         listview.addHeaderView(header);
-        //String lastHeader = prefs.getString("header", "iSangat.org");
-        //headerText.setText(lastHeader);
+        String lastHeader = prefs.getString("header", "Sikh.Events");
+        headerText.setText(lastHeader);
        // adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,temp);
         cadapter = new CustomArrayAdapter(this, R.layout.simplelistitem, Programs);
         listview.setAdapter(cadapter);
@@ -254,7 +254,6 @@ public class MainActivity extends AppCompatActivity {
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putString("header", loc);
                 mainList.setVisibility(View.VISIBLE);
-               // ekhalsa.setVisibility(View.GONE);
                 switch (position) {
                     case 0:
                         return;
@@ -313,11 +312,9 @@ public class MainActivity extends AppCompatActivity {
             JSONArray programs = null;
             if (site.contains("sikh")){
                 programs  = new JSONArray(jsonStr);
-                //headerText.setText("San Jose Gurdwara Programs");
             }else {
                 JSONObject obj = new JSONObject(jsonStr);
                  programs = obj.getJSONArray("programs");
-               // headerText.setText("Programs from isangat.org");
             }
 
             cadapter.clear();
@@ -403,6 +400,7 @@ public class MainActivity extends AppCompatActivity {
         public String phone = "";
         public String source = "";
         public String description = "";
+        public String event_type = "";
     }
 
     /*
@@ -516,12 +514,12 @@ public class MainActivity extends AppCompatActivity {
                 while ((line = reader.readLine()) != null) {
                     builder.append(line);
                 }
-                if (!site.contains("sikh")) {//temporarily only cache isangat programs. because vsk programs need to be filtered onload too
+                //if (!site.contains("sikh")) {//temporarily only cache isangat programs. because vsk programs need to be filtered onload too
                     SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = prefs.edit();
                     editor.putString("json", builder.toString());
                     editor.commit();
-                }
+                //}
 
                 ret= builder.toString();
 
@@ -550,6 +548,19 @@ public class MainActivity extends AppCompatActivity {
             }
             else {
                 PutJSON(result);
+                //Toast.makeText(MainActivity.this, "File Downloaded", Toast.LENGTH_SHORT).show();
+                TextView textview = (TextView) findViewById(R.id.textView2);
+                Calendar cal = Calendar.getInstance();
+
+                Date now = new Date();
+                CharSequence timeString;
+                timeString = DateUtils.getRelativeDateTimeString(mContext, now.getTime(), DateUtils.MINUTE_IN_MILLIS, DateUtils.WEEK_IN_MILLIS,0);
+
+                SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putLong("date", now.getTime());
+                editor.commit();
+                textview.setText("Last Updated " + timeString);
             }
         }
     }
