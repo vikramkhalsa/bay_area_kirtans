@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -20,7 +21,6 @@ import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
-import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -241,7 +241,16 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Set the adapter for the list view
-        locationAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_activated_1,list);
+        locationAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_activated_1,list){
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                TextView textView = (TextView) super.getView(position, convertView, parent);
+                textView.setTextColor(Color.WHITE);
+
+                return textView;
+            }
+
+        };
         mDrawerList.setAdapter(locationAdapter);
         //new JSONGetter().execute("http://sikh.events/getlocations.php");
 
@@ -295,10 +304,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        TextView mLink = (TextView) findViewById(R.id.navfootertext2);
-        if (mLink != null) {
-            mLink.setMovementMethod(LinkMovementMethod.getInstance());
-        }
     }
     static class  ViewHolder{
         TextView title;
