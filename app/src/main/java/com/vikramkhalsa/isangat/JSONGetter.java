@@ -2,6 +2,10 @@ package com.vikramkhalsa.isangat;
 
 import android.os.AsyncTask;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,15 +68,23 @@ class JSONGetter  extends AsyncTask<String, Void, String> {
         if (result.contains("ERROR")) {
             // Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
         } else {
-            result = result.substring(1, result.length() - 1);
-            result = result.replace("\"", "");
-            for (String res : result.split(",")) {
-                //MainActivity.locationAdapter.add(res);
-                if (!MainActivity.list.contains(res)) {
-                    MainActivity.list.add(res);
-                }
 
+            try {
+                JSONArray locs = new JSONArray(result);
+
+                for (int i=0; i< locs.length(); i++) {
+                    JSONObject res = locs.getJSONObject(i);
+                    //MainActivity.locationAdapter.add(res);
+                    if (!MainActivity.list.contains(res.getString("name"))) {
+                        MainActivity.list.add(res.getString("name"));
+                        MainActivity.locationIDs.add(res.getString("regionid"));
+                    }
+
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
+
         }
 
     }

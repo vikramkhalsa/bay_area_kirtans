@@ -2,12 +2,31 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-
-    <!-- "Mark Favorite", should appear as action button if possible -->
     <item
-        android:id="@+id/action_favorite"
-        android:icon="@drawable/roundinfobutton"
-        android:title="Source"
-        app:showAsAction="ifRoom"/>
-
+        android:id="@+id/spinner"
+        android:title="Filter Events"
+        android:icon="@drawable/ic_filter_list_24dp"
+        app:showAsAction="ifRoom">
+        <menu
+            android:id="@+id/filterMenu">
+            <group android:checkableBehavior="single">
+            <item
+                android:id="@+id/allBtn"
+                android:title="All Types"
+                android:checked="true"/>
+            <item
+                android:id="@+id/kirtanBtn"
+                android:title="Kirtan" />
+            <item
+                android:id="@+id/kathaBtn"
+                android:title="Katha" />
+            <item
+                android:id="@+id/campBtn"
+                android:title="Camp" />
+            <item
+                android:id="@+id/otherBtn"
+                android:title="Other" />
+            </group>
+        </menu>
+    </item>
 </menu>

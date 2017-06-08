@@ -22,6 +22,8 @@ import android.text.Html;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +32,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,6 +53,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 //isangat - Bay Area Kirtan Programs App
 //Created by Vikram Singh Khalsa (www.VikramKhalsa.com)
@@ -58,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
     //Ekhalsa URL
    // public String ekhalsa_site = "http://www.ekhalsa.com/m";
     //changing URL
-    public String site = "http://www.sikh.events/getprograms.ph";
+    public String site = "http://www.sikh.events/getprograms.php";
     //List of programs
     private ArrayList<program> Programs =new ArrayList<program>();
     //ArrayList<String> temp = new ArrayList<String>();
@@ -68,59 +72,60 @@ public class MainActivity extends AppCompatActivity {
 
     public TextView headerText;
     public static ArrayList<String> list;
+    public static ArrayList<String> locationIDs;
     private ActionBarDrawerToggle mDrawerToggle;
     private DrawerLayout mDrawerLayout;
     private String location = "";
 
-    /*
+    private ProgressBar spinner;
+    private ImageButton refBtn;
+    private boolean resetFilter = false;
 //used to create options menu
     @Override
    public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
 
         inflater.inflate(R.menu.main_activity_bar, menu);
+
         return super.onCreateOptionsMenu(menu);
     }
-*/
-//change site url OR visibility based on what gets selected in the menu
+
+//filter event types based on user selection and show selection as checked
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-       /* WebView ekhalsa = (WebView) findViewById(R.id.webView1);
-        ListView mainList = (ListView) findViewById(R.id.listView1);
+        item.setChecked(true);
         switch (item.getItemId()) {
-            case R.id.action_isangat:
-                //sw.setChecked(false);
-                site = "http://www.isangat.org/json.php";
-                new jsonTask(this).execute(site);
-                mainList.setVisibility(View.VISIBLE);
-                ekhalsa.setVisibility(View.GONE);
+            case R.id.menuBtn:
+                mDrawerLayout.openDrawer(GravityCompat.START);
                 break;
-            case R.id.action_ekhalsa:
-                site = "http://www.ekhalsa.com";
-                ekhalsa.setVisibility(View.VISIBLE);
-                mainList.setVisibility(View.GONE);
+            case R.id.allBtn:
+                cadapter.filter("");
                 break;
-            case R.id.action_vsk:
-                site = "http://www.vikramkhalsa.com/kirtanapp/getprograms.php";
-                new jsonTask(this).execute(site);
-                mainList.setVisibility(View.VISIBLE);
-                ekhalsa.setVisibility(View.GONE);
+            case R.id.kirtanBtn:
+                cadapter.filter("kirtan");
+                break;
+            case R.id.kathaBtn:
+                cadapter.filter("katha");
+                break;
+            case R.id.campBtn:
+                cadapter.filter("camp");
+                break;
+            case R.id.otherBtn:
+                cadapter.filter("other");
                 break;
             default:
-                int i = 0;
                 break;
         }
-        // If we got here, the user's action was not recognized.
-        // Invoke the superclass to handle it.
-        SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("site", site);
-        editor.commit();*/
-        mDrawerLayout.openDrawer(GravityCompat.START);
-        //if (mDrawerToggle.onOptionsItemSelected(item)) {
-          //  return true;
-        //}
 
+        return true;
+    }
+
+    @Override
+    public boolean onMenuOpened(int featureid, Menu menu)
+    {   if(resetFilter) {
+        menu.getItem(0).setChecked(true);
+        resetFilter = false;
+    }
         return true;
     }
 
@@ -150,7 +155,8 @@ public class MainActivity extends AppCompatActivity {
 
        ActionBar ab = getSupportActionBar();
         ab.setDisplayShowTitleEnabled(false);
-
+        spinner = (ProgressBar)findViewById(R.id.progressBar1);
+        refBtn = (ImageButton)findViewById(R.id.refreshBtn);
         //Check if last load date exists in prefs, if so, show it in the text view
         final SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
         TextView textview = (TextView) findViewById(R.id.textView2);
@@ -167,22 +173,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-       // final WebView ekhalsa = (WebView)findViewById(R.id.webView1);
-        final ListView mainList = (ListView)findViewById(R.id.listView1);
+       // final ListView mainList = (ListView)findViewById(R.id.listView1);
         //Check what the last loaded site was
         if (prefs.contains("site")) {
 
             site = prefs.getString("site", "false");
-
-           // if (site.contains("ekhalsa")){
-            //    ekhalsa.setVisibility(View.VISIBLE);
-            //    mainList.setVisibility(View.GONE);
-           // }
-           // else {
-                mainList.setVisibility(View.VISIBLE);
-              //  ekhalsa.setVisibility(View.GONE);
-           // }
-           // site = "http://www.isangat.org/json2.php"; //temporarily always
         }
 
         //Check if there is wifi or internet
@@ -205,11 +200,12 @@ public class MainActivity extends AppCompatActivity {
         View header = inflater.inflate(R.layout.listheader, listview, false);
         headerText = (TextView) header.findViewById(R.id.headertext);
         listview.addHeaderView(header);
-        String lastHeader = prefs.getString("header", "Sikh.Events");
+        String lastHeader = prefs.getString("header", "All Regions");
         headerText.setText(lastHeader);
        // adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,temp);
         cadapter = new CustomArrayAdapter(this, R.layout.simplelistitem, Programs);
         listview.setAdapter(cadapter);
+        listview.setEmptyView(findViewById(R.id.emptyView));
 
         //If there is internet, update/download the page
        if (isConnected) {
@@ -221,18 +217,33 @@ public class MainActivity extends AppCompatActivity {
         //otherwise just load the page from file
         else {
             Toast.makeText(MainActivity.this, "Loading data from cache", Toast.LENGTH_SHORT).show();
-            loadPage();
+            //loadPage();
 
             if (prefs.contains("json")) {
                 PutJSON(prefs.getString("json", new JSONObject().toString()));
             }
         }
 
-        final String[] locations = new String[]{"Sikh.Events", "iSangat.org", "eKhalsa.com",};//"San Jose Gurdwara Sahib", "Fremont Gurdwara Sahib", "eKhalsa.com"};
+        final String[] items = new String[]{"iSangat.org","eKhalsa.com"};
+        final ListView sourceList = (ListView) findViewById(R.id.left_drawer2);
+        ArrayAdapter<String> adapter2 = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_activated_1, items) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                TextView textView = (TextView) super.getView(position, convertView, parent);
+                textView.setTextColor(Color.WHITE);
+                return textView;
+            }
+        };
+        sourceList.setAdapter(adapter2);
+        //sourceList.addHeaderView(new View(this));
+        sourceList.addFooterView(new View(this));
+
+        locationIDs = new ArrayList<String>();
+        final String[] locations = new String[]{"All Regions"};//"San Jose Gurdwara Sahib", "Fremont Gurdwara Sahib", "eKhalsa.com"};
         final DrawerLayout mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         final ListView mDrawerList = (ListView) findViewById(R.id.left_drawer);
-        View navHeader = inflater.inflate(R.layout.navlistheader, mDrawerList,false);
-        mDrawerList.addHeaderView(navHeader);
+        //View navHeader = inflater.inflate(R.layout.navlistheader, mDrawerList,false);
+        //mDrawerList.addHeaderView(new View(this));
         //View navFooter = inflater.inflate(R.layout.navlistfooter, mDrawerList,false);
         //mDrawerList.addFooterView(navFooter);
         list = new ArrayList<String>();
@@ -252,59 +263,74 @@ public class MainActivity extends AppCompatActivity {
 
         };
         mDrawerList.setAdapter(locationAdapter);
-        //new JSONGetter().execute("http://sikh.events/getlocations.php");
+        new JSONGetter().execute("http://sikh.events/getlocations.php?regions=current");
 
         // Set the list's click listener
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String loc = list.get(position -1);
+                String loc = list.get(position);
                 headerText.setText(loc);
                 SharedPreferences.Editor editor = prefs.edit();
                 editor.putString("header", loc);
-                mainList.setVisibility(View.VISIBLE);
                 switch (position) {
                     case 0:
-                        return;
-                    case 1:
-                        //sw.setChecked(false);
                         site = "http://www.sikh.events/getprograms.php";
                         new jsonTask(parent.getContext()).execute(site);
-                        location = "";
-                       //
-                        break;
-                    case 2:
-                        site = "http://www.isangat.org/json2.php";
-                        new jsonTask(parent.getContext()).execute(site);
-                        location = "";
-                        //site = ekhalsa_site;
-                        //ekhalsa.setVisibility(View.VISIBLE);
-                        //mainList.setVisibility(View.GONE);
-                        break;
-                    case 3:
-                        site = "http://www.sikh.events/getprograms.php?source=ekhalsa";
-                        new jsonTask(parent.getContext()).execute(site);
-                        location = "";
                         break;
                     default:
                         site = "http://www.sikh.events/getprograms.php";
+                        if (locationIDs.size() > position - 1)
+                            site = site + "?region=" + locationIDs.get(position - 1);
                         new jsonTask(parent.getContext()).execute(site);
-                        location = "";
-                        //temporaily just make this another source rather than splitting by location
-                        //cadapter.filter("Jose");
                         break;
-                   // default:
-                    //    int i = 0;
-                     //   break;
                 }
                 editor.putString("site", site);
                 editor.commit();
-                mDrawerList.setItemChecked(position, true);
+                for (int i = 0; i < mDrawerList.getChildCount(); i++) {
+                    sourceList.setItemChecked(i,false);
+                }
+                mDrawerLayout.closeDrawer(GravityCompat.START);
+            }
+        });
+        // Set the list's click listener
+        sourceList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String loc = items[position];
+                headerText.setText(loc);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString("header", loc);
+
+                switch (position) {
+                    case 0:
+                        site = "http://www.isangat.org/json2.php";
+                        new jsonTask(parent.getContext()).execute(site);
+                        break;
+                    case 1:
+                        site = "http://www.sikh.events/getprograms.php?source=ekhalsa";
+                        new jsonTask(parent.getContext()).execute(site);
+                        break;
+                    default:
+                        return;
+                }
+                editor.putString("site", site);
+                editor.commit();
+                for (int i = 0; i < mDrawerList.getChildCount(); i++) {
+                    mDrawerList.setItemChecked(i,false);
+                }
                 mDrawerLayout.closeDrawer(GravityCompat.START);
             }
         });
 
+
     }
+
+    public void shareEvent() {
+        Toast.makeText(this, "test", Toast.LENGTH_SHORT).show();
+
+    }
+
     static class  ViewHolder{
         TextView title;
         TextView subtitle;
@@ -321,8 +347,8 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject obj = new JSONObject(jsonStr);
                  programs = obj.getJSONArray("programs");
             }
-
-            cadapter.clear();
+            Programs.clear();
+            //cadapter.clear();
             for(int i = 0; i < programs.length();i++) {
                 JSONObject program1 = programs.getJSONObject(i);
                 program temp_prog = new program();
@@ -337,15 +363,21 @@ public class MainActivity extends AppCompatActivity {
                         temp_prog.startDate = sdf.parse(program1.getString("sd"));
                         temp_prog.endDate = sdf.parse(program1.getString("ed"));
                         temp_prog.id = program1.getInt("id");
+                        if(program1.has("type"))
+                            temp_prog.event_type = program1.getString("type");
                        // temp_prog.source = program1.getString("source");
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
-                    cadapter.add(temp_prog);
+                    Programs.add(temp_prog);
+                    //cadapter.add(temp_prog);
             }
-            if (!location.isEmpty()) {
-                cadapter.filter(location); // in the future, can filter from the same source based on various ..things?
-            }
+            cadapter.notifyDataSetChanged();
+            cadapter.setList(Programs);
+            resetFilter = true;
+            //if (!location.isEmpty()) {
+              //  cadapter.filter(location); // in the future, can filter from the same source based on various ..things?
+            //}
             //cadapter.getFilter().filter("vsk");
         } catch (Exception e) {
             e.printStackTrace();
@@ -359,15 +391,12 @@ public class MainActivity extends AppCompatActivity {
     public void enter(View v) {
        Toast.makeText(MainActivity.this, "Loading Data from Web", Toast.LENGTH_SHORT).show();
         //if (site!= ekhalsa_site)
+        TextView textview = (TextView) findViewById(R.id.textView2);
             new jsonTask(this).execute(site);
         //new webTask(this).execute(ekhalsa_site);
-        //new JSONGetter().execute("http://sikh.events/getlocations.php");
+        new JSONGetter().execute("http://sikh.events/getlocations.php?regions=current");
     }
 
-    //filter testing method
-    public void filter(View v){
-        cadapter.filter("akj");
-    }
 
     //Reloads the webview with contents from the saved file
     private void loadPage() {
@@ -405,7 +434,7 @@ public class MainActivity extends AppCompatActivity {
         public String phone = "";
         public String source = "";
         public String description = "";
-        public String event_type = "";
+        public String event_type = "kirtan";
     }
 
     /*
@@ -546,6 +575,14 @@ public class MainActivity extends AppCompatActivity {
             //setProgressPercent(progress[0]);
         }
 
+        protected void onPreExecute(){
+            TextView textview = (TextView) findViewById(R.id.textView2);
+            textview.setText("Loading...");
+            refBtn.setVisibility(View.INVISIBLE);
+            spinner.setVisibility(View.VISIBLE);
+        }
+
+
         protected void onPostExecute(String result) {
 
             if (result.contains("ERROR")) {
@@ -566,6 +603,8 @@ public class MainActivity extends AppCompatActivity {
                 editor.putLong("date", now.getTime());
                 editor.commit();
                 textview.setText("Last Updated " + timeString);
+                refBtn.setVisibility(View.VISIBLE);
+                spinner.setVisibility(View.GONE);
             }
         }
     }
@@ -578,13 +617,16 @@ public class MainActivity extends AppCompatActivity {
         private ArrayList<program> list;
         Context context;
         int resource;
+        public void setList(ArrayList<program> fullist){
+            this.allPrograms = (ArrayList<program>) fullist.clone();
+    }
 
         private ArrayList<program>  allPrograms = null;
         public void filter(String charText) {
-            //charText = charText.toLowerCase(Locale.getDefault());
-            if (allPrograms == null) {
-                allPrograms = (ArrayList) Programs.clone();
-            }
+            charText = charText.toLowerCase(Locale.getDefault());
+//            if (allPrograms == null) {
+//                allPrograms = (ArrayList) Programs.clone();
+//            }
             ArrayList<program> tempList = (ArrayList<program>)allPrograms.clone();
             Programs.clear();
             if (charText.length() == 0) {
@@ -594,7 +636,13 @@ public class MainActivity extends AppCompatActivity {
             {
                 for (program p : tempList)
                 {
-                    if (p.subtitle.contains(charText))
+                    if(charText=="other"){ //for other, ignore kirtan and katha
+                        if (!(p.event_type.contains("kirtan") ||p.event_type.contains("katha")))
+                        {
+                            Programs.add(p);
+                        }
+                    } //otherwise filter as usual
+                    else if (p.event_type.contains(charText))
                     {
                         Programs.add(p);
                     }
@@ -602,6 +650,7 @@ public class MainActivity extends AppCompatActivity {
             }
             notifyDataSetChanged();
         }
+
         public CustomArrayAdapter(Context context, int textViewResourceId, ArrayList<program> programs){
             super(context, textViewResourceId, programs);
             this.list = new ArrayList<program>();
@@ -649,7 +698,7 @@ public class MainActivity extends AppCompatActivity {
                 TextView phone = (TextView) programView.findViewById(R.id.phone);
                 TextView source = (TextView) programView.findViewById(R.id.source);
                 ImageButton descBtn = (ImageButton) programView.findViewById(R.id.descBtn);
-
+//                ImageButton shareBtn = (ImageButton) programView.findViewById(R.id.shareBtn);
                 ImageButton add2calbtn = (ImageButton) programView.findViewById(R.id.calBtn);
 
                 address.setOnClickListener(new View.OnClickListener() {
@@ -675,6 +724,18 @@ public class MainActivity extends AppCompatActivity {
                 }else {
                     phone.setVisibility(View.GONE);
                 }
+
+//                shareBtn.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        String shareBody = pg.title;
+//                        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+//                        sharingIntent.setType("text/plain");
+//                        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
+//                        startActivity(Intent.createChooser(sharingIntent, "Share with"));
+//                    }
+//                });
+
 
                 add2calbtn.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -705,7 +766,18 @@ public class MainActivity extends AppCompatActivity {
                 address.setText((pg.address));
 
                 DateFormat df = new DateFormat();
-                date.setText(df.format("EEE, MMM dd", pg.startDate));
+
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(pg.startDate);
+                int d1 = cal.get(Calendar.DAY_OF_MONTH);
+                cal.setTime(pg.endDate);
+                int d2 = cal.get(Calendar.DAY_OF_MONTH);
+
+                if (d1 != d2){ //if end date differs from start date, show both dates as a range, else display just start date
+                    date.setText(df.format("EEE, MMM dd", pg.startDate) + " - " + df.format("EEE, MMM dd", pg.endDate));
+                }else {
+                    date.setText(df.format("EEE, MMM dd", pg.startDate));
+                }
                time.setText(df.format("hh:mma", pg.startDate) + " to " + df.format("hh:mma", pg.endDate));
                 source.setText(pg.source);
             }

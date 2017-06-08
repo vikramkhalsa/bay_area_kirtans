@@ -30,7 +30,7 @@ android:padding="0dp">
             <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/imageButton1"
+                android:id="@+id/menuBtn"
                 android:src="@drawable/ic_menu_24dp"
                 android:onClick="showMenu"
                 android:layout_gravity="center_vertical"
@@ -40,13 +40,13 @@ android:padding="0dp">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Bay Area Kirtan Programs"
+                android:text="Sikh Events"
                 android:id="@+id/textView3"
                 android:textSize="20dp"
                 android:padding="10dp"
                 android:textColor="@android:color/white"></TextView>
-        </android.support.v7.widget.Toolbar>
 
+        </android.support.v7.widget.Toolbar>
 
 
         <ListView
@@ -57,8 +57,20 @@ android:padding="0dp">
             android:headerDividersEnabled="true"
             android:dividerHeight="1dp"
             android:divider="#b0b0b0"
-            android:layout_weight="1" />
-
+            android:layout_weight="1"
+            android:choiceMode="singleChoice"
+            android:listSelector="@android:color/darker_gray"
+            />
+        <TextView android:id="@+id/emptyView"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:text="No results found. Please try a different region, source, or filter."
+            android:textSize="18dp"
+            android:padding="15dp"
+            android:textColor="@android:color/darker_gray"
+            android:visibility="gone"
+            android:layout_weight="1"
+            android:gravity="center"/>
         <WebView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
@@ -72,6 +84,14 @@ android:padding="0dp">
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <ProgressBar
+                android:id="@+id/progressBar1"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"
+                android:visibility="gone"/>
+
             <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -81,18 +101,10 @@ android:padding="0dp">
                 android:layout_weight="1"
                 android:layout_gravity="center_vertical" />
 
-            <Switch
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:id="@+id/switch1"
-                android:backgroundTint="#5e5e5e"
-                android:enabled="true"
-                android:visibility="gone"/>
-
             <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/imageButton"
+                android:id="@+id/refreshBtn"
                 android:src="@drawable/ic_refresh_24dp"
                 android:onClick="enter"
                 android:layout_gravity="center_vertical"
@@ -105,9 +117,50 @@ android:padding="0dp">
         android:orientation="vertical"
         android:layout_width="270dp"
         android:layout_height="match_parent"
-        android:layout_gravity="start">
+        android:layout_gravity="start"
+        android:background="@color/colorPrimaryDark">
 
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
+            <ImageView
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:id="@+id/imageView"
+                android:src="@drawable/logoimage"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:layout_marginBottom="2dp" />
+
+            <ImageView
+                android:layout_height="wrap_content"
+                android:id="@+id/imageView2"
+                android:src="@drawable/sikhevents_text_small"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="15dp"
+                android:layout_width="wrap_content" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="REGIONS"
+            android:textSize="16dp"
+            android:paddingLeft="15dp"
+            android:background="#00ffffff"
+            android:textColor="#c5c5c5"
+            android:paddingBottom="5dp"
+            android:elevation="6dp"
+            />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorYellow"
+            android:elevation="6dp">
+        </View>
     <ListView android:id="@+id/left_drawer"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
@@ -120,20 +173,47 @@ android:padding="0dp">
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Available sources and locations for programs will show up here. "
-            android:id="@+id/navfootertext"
-            android:textSize="14dp"
-            android:padding="15dp"
-            android:background="@color/colorLight"
-            android:textColor="#DDDDDD"
+            android:text="OTHER SOURCES"
+            android:textSize="16dp"
+            android:paddingLeft="15dp"
+            android:background="@color/colorPrimaryDark"
+            android:textColor="#c5c5c5"
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:elevation="6dp"/>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorYellow">
+        </View>
+        <ListView android:id="@+id/left_drawer2"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:choiceMode="singleChoice"
+            android:divider="@color/colorYellow"
+            android:dividerHeight="1dp"
+            android:background="@color/colorPrimaryDark"
+            android:footerDividersEnabled="true"
             />
+        <!--<TextView-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:text="Available sources and locations for programs will show up here. "-->
+            <!--android:id="@+id/navfootertext"-->
+            <!--android:textSize="14dp"-->
+            <!--android:padding="15dp"-->
+            <!--android:background="@color/colorLight"-->
+            <!--android:textColor="#DDDDDD"-->
+            <!--/>-->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/sikheventslink"
             android:id="@+id/navfootertext3"
             android:textSize="14dp"
-            android:padding="15dp"
+            android:paddingLeft="15dp"
+            android:paddingTop="15dp"
+            android:paddingRight="15dp"
             android:background="@color/colorLight"
             android:textColor="#6a6a6a"
             android:autoLink="web"
