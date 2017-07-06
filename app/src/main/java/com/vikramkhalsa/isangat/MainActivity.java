@@ -1,14 +1,18 @@
 package com.vikramkhalsa.isangat;
 
-import android.app.AlertDialog;
+import android.annotation.TargetApi;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.provider.CalendarContract;
@@ -17,6 +21,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.menu.ActionMenuItemView;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.format.DateFormat;
@@ -31,6 +36,7 @@ import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -93,13 +99,20 @@ public class MainActivity extends AppCompatActivity {
 //filter event types based on user selection and show selection as checked
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if(cadapter == null){
+            return false;
+        }
         item.setChecked(true);
+        ActionMenuItemView filterBtn = (ActionMenuItemView)findViewById(R.id.filterBtn);
+        Resources res = getResources();
+        filterBtn.setIcon(res.getDrawable(R.drawable.ic_filter_list_colored_24dp));
         switch (item.getItemId()) {
             case R.id.menuBtn:
                 mDrawerLayout.openDrawer(GravityCompat.START);
                 break;
             case R.id.allBtn:
                 cadapter.filter("");
+                filterBtn.setIcon(res.getDrawable(R.drawable.ic_filter_list_24dp));
                 break;
             case R.id.kirtanBtn:
                 cadapter.filter("kirtan");
@@ -114,6 +127,7 @@ public class MainActivity extends AppCompatActivity {
                 cadapter.filter("other");
                 break;
             default:
+                filterBtn.setIcon(res.getDrawable(R.drawable.ic_filter_list_24dp));
                 break;
         }
 
@@ -285,6 +299,9 @@ public class MainActivity extends AppCompatActivity {
                         new jsonTask(parent.getContext()).execute(site);
                         break;
                 }
+                ActionMenuItemView filterBtn = (ActionMenuItemView)findViewById(R.id.filterBtn);
+                Resources res = getResources();
+                filterBtn.setIcon(res.getDrawable(R.drawable.ic_filter_list_24dp));
                 editor.putString("site", site);
                 editor.commit();
                 for (int i = 0; i < mDrawerList.getChildCount(); i++) {
@@ -314,6 +331,9 @@ public class MainActivity extends AppCompatActivity {
                     default:
                         return;
                 }
+                ActionMenuItemView filterBtn = (ActionMenuItemView)findViewById(R.id.filterBtn);
+                Resources res = getResources();
+                filterBtn.setIcon(res.getDrawable(R.drawable.ic_filter_list_24dp));
                 editor.putString("site", site);
                 editor.commit();
                 for (int i = 0; i < mDrawerList.getChildCount(); i++) {
@@ -366,6 +386,10 @@ public class MainActivity extends AppCompatActivity {
                         if(program1.has("type"))
                             temp_prog.event_type = program1.getString("type");
                        // temp_prog.source = program1.getString("source");
+                        if(program1.has("imageurl"))
+                            temp_prog.imageurl = program1.getString("imageurl");
+                        if(program1.has("siteurl"))
+                            temp_prog.siteurl = program1.getString("siteurl");
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
@@ -435,6 +459,8 @@ public class MainActivity extends AppCompatActivity {
         public String source = "";
         public String description = "";
         public String event_type = "kirtan";
+        public String imageurl = null;
+        public String siteurl = null;
     }
 
     /*
@@ -746,13 +772,43 @@ public class MainActivity extends AppCompatActivity {
 
                 if (!"".equals(pg.description)) {
                     descBtn.setOnClickListener(new View.OnClickListener() {
+                        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
                         @Override
                         public void onClick(View v) {
-                           // popupMessage.showAtLocation(layout, Gravity.CENTER, 0, 0);
-                            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-                            alertDialog.setTitle("Details");
-                            alertDialog.setMessage(Html.fromHtml(pg.description.replace("</br>","<br>")));
-                            alertDialog.show();
+//                            AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
+//                            alertDialog.setTitle("Details");
+//                            alertDialog.setMessage(Html.fromHtml(pg.description.replace("</br>","<br>")));
+//                            alertDialog.show();
+
+                            LayoutInflater inflater = getLayoutInflater();
+                            //Inflate the view from a predefined XML layout
+                            View layout = inflater.inflate(R.layout.about_popup,
+                                    (ViewGroup) findViewById(R.id.about_popup));
+
+                            TextView maintext = (TextView)layout.findViewById(R.id.textView123);
+                            maintext.setText(Html.fromHtml(pg.description.replace("</br>", "<br>")));
+
+
+                            if(pg.siteurl!= null  && pg.siteurl!= "null") {
+                                TextView link = (TextView)layout.findViewById(R.id.eventlink);
+                                link.setText(pg.siteurl);
+                                link.setVisibility(View.VISIBLE);
+                            }
+
+                            if (pg.imageurl!= null && pg.imageurl!= "null") {
+                                ImageView img = (ImageView)layout.findViewById(R.id.imageView3);
+                                // Get an Image
+                                try {
+                                    AsyncTask<String, Void, Bitmap> execute = new DownloadImageTask(img)
+                                            .execute(pg.imageurl);
+                                    // R.id.imageView  -> Here imageView is id of your ImageView
+                                } catch (Exception ex) {
+                                }
+                            }
+
+                            Dialog dialog = new Dialog(context);
+                            dialog.setContentView(layout);
+                            dialog.show();
                         }
                     });
                     descBtn.setVisibility(View.VISIBLE);
