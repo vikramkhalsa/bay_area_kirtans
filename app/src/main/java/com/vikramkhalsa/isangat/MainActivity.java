@@ -238,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        final String[] items = new String[]{"iSangat.org","eKhalsa.com"};
+        final String[] items = new String[]{"iSangat.org","eKhalsa.com","akj.org", "samagams.org"};
         final ListView sourceList = (ListView) findViewById(R.id.left_drawer2);
         ArrayAdapter<String> adapter2 = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_activated_1, items) {
             @Override
@@ -321,11 +321,19 @@ public class MainActivity extends AppCompatActivity {
 
                 switch (position) {
                     case 0:
-                        site = "http://www.isangat.org/json2.php";
+                        site = "http://www.sikh.events/getprograms.php?source=isangat2";
                         new jsonTask(parent.getContext()).execute(site);
                         break;
                     case 1:
                         site = "http://www.sikh.events/getprograms.php?source=ekhalsa";
+                        new jsonTask(parent.getContext()).execute(site);
+                        break;
+                    case 2:
+                        site = "http://www.sikh.events/getprograms.php?source=akjorg";
+                        new jsonTask(parent.getContext()).execute(site);
+                        break;
+                    case 3:
+                        site = "http://www.sikh.events/getprograms.php?source=samagams";
                         new jsonTask(parent.getContext()).execute(site);
                         break;
                     default:
@@ -361,12 +369,12 @@ public class MainActivity extends AppCompatActivity {
         sdf.applyPattern("yyyy-MM-dd HH:mm:ss");
         try{
             JSONArray programs = null;
-            if (site.contains("sikh")){
+          //  if (site.contains("sikh")){
                 programs  = new JSONArray(jsonStr);
-            }else {
-                JSONObject obj = new JSONObject(jsonStr);
-                 programs = obj.getJSONArray("programs");
-            }
+//            }else {
+//                JSONObject obj = new JSONObject(jsonStr);
+//                 programs = obj.getJSONArray("programs");
+//            }
             Programs.clear();
             //cadapter.clear();
             for(int i = 0; i < programs.length();i++) {
@@ -463,86 +471,6 @@ public class MainActivity extends AppCompatActivity {
         public String siteurl = null;
     }
 
-    /*
-    //gets ekhalsa website in webview.. temporary solution untilw e can get json data from them
-    public class webTask extends AsyncTask<String, Integer, String> {
-
-        private Context mContext;
-        public webTask (Context context) {
-            mContext = context;
-        }
-
-        protected String doInBackground(String... temp) {
-            String ret = "";
-            try {
-
-                URL url = new URL(temp[0]); //gets url from string array? passed in
-                //create the new connection
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                //set up some things on the connection
-                //urlConnection.setRequestProperty("User-Agent", USERAGENT);  //if you are not sure of user agent just set choice=0
-                urlConnection.setRequestMethod("GET");
-                urlConnection.setDoOutput(true);
-                urlConnection.connect();
-
-                InputStream inputStream = urlConnection.getInputStream();
-
-                //this will be used to write the downloaded data into the file we created
-                FileOutputStream fileOutput = openFileOutput("isangatTemp.html", Context.MODE_PRIVATE);
-                //this is the total size of the file
-                int totalSize = urlConnection.getContentLength();
-                //variable to store total downloaded bytes
-                int downloadedSize = 0;
-
-                //create a buffer...
-                byte[] buffer = new byte[1024];
-                int bufferLength = 0; //used to store a temporary size of the buffer
-
-                //write the contents to the file
-                while ((bufferLength = inputStream.read(buffer)) > 0) {
-                    fileOutput.write(buffer, 0, bufferLength);
-                }
-                //close the output stream when done
-                fileOutput.close();
-                inputStream.close();
-                urlConnection.disconnect();
-                ret = "success";
-
-            } catch (Exception exception) {
-                ret = "ERROR:" + exception.getMessage();
-            } finally {
-                return ret;
-            }
-        }
-
-        protected void onProgressUpdate(Integer... progress) {
-            //setProgressPercent(progress[0]);
-        }
-
-        protected void onPostExecute(String result) {
-            if (result == "success") {
-                Toast.makeText(MainActivity.this, "File Downloaded", Toast.LENGTH_SHORT).show();
-                TextView textview = (TextView) findViewById(R.id.textView2);
-                Calendar cal = Calendar.getInstance();
-
-                Date now = new Date();
-                CharSequence timeString;
-                timeString = DateUtils.getRelativeDateTimeString(mContext, now.getTime(), DateUtils.MINUTE_IN_MILLIS, DateUtils.WEEK_IN_MILLIS,0);
-
-                //String time = DateUtils.getRelativeDateTimeString(MainActivity.this, cal.getTimeInMillis(), DateUtils.HOUR_IN_MILLIS, DateUtils.WEEK_IN_MILLIS);
-                //String time = cal.getTime().toString();
-                SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putLong("date", now.getTime());
-                editor.commit();
-                textview.setText("Last Updated " + timeString);
-                loadPage();
-            } else {
-                Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-*/
     //gets json data from vsk or sikh.events website and creates programs
     public class jsonTask extends AsyncTask<String, Integer, String> {
 
@@ -556,8 +484,6 @@ public class MainActivity extends AppCompatActivity {
             try {
                 URL url = null;
                 url = new URL(temp[0]);
-                //url = new URL("http://www.vikramkhalsa.com/kirtanapp/getprograms.php");
-                //url = new URL("http://www.isangat.org/json.php");
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 //set up some things on the connection
                 //urlConnection.setRequestProperty("User-Agent", USERAGENT);  //if you are not sure of user agent just set choice=0
@@ -574,12 +500,12 @@ public class MainActivity extends AppCompatActivity {
                 while ((line = reader.readLine()) != null) {
                     builder.append(line);
                 }
-                //if (!site.contains("sikh")) {//temporarily only cache isangat programs. because vsk programs need to be filtered onload too
+
                     SharedPreferences prefs = getSharedPreferences("DATE_PREF", Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = prefs.edit();
                     editor.putString("json", builder.toString());
                     editor.commit();
-                //}
+
 
                 ret= builder.toString();
 
@@ -724,7 +650,7 @@ public class MainActivity extends AppCompatActivity {
                 TextView phone = (TextView) programView.findViewById(R.id.phone);
                 TextView source = (TextView) programView.findViewById(R.id.source);
                 ImageButton descBtn = (ImageButton) programView.findViewById(R.id.descBtn);
-//                ImageButton shareBtn = (ImageButton) programView.findViewById(R.id.shareBtn);
+                ImageButton shareBtn = (ImageButton) programView.findViewById(R.id.shareBtn);
                 ImageButton add2calbtn = (ImageButton) programView.findViewById(R.id.calBtn);
 
                 address.setOnClickListener(new View.OnClickListener() {
@@ -750,18 +676,6 @@ public class MainActivity extends AppCompatActivity {
                 }else {
                     phone.setVisibility(View.GONE);
                 }
-
-//                shareBtn.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        String shareBody = pg.title;
-//                        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
-//                        sharingIntent.setType("text/plain");
-//                        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
-//                        startActivity(Intent.createChooser(sharingIntent, "Share with"));
-//                    }
-//                });
-
 
                 add2calbtn.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -821,7 +735,7 @@ public class MainActivity extends AppCompatActivity {
                 subtitle.setText((pg.subtitle));
                 address.setText((pg.address));
 
-                DateFormat df = new DateFormat();
+                final DateFormat df = new DateFormat();
 
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(pg.startDate);
@@ -834,8 +748,24 @@ public class MainActivity extends AppCompatActivity {
                 }else {
                     date.setText(df.format("EEE, MMM dd", pg.startDate));
                 }
+
                time.setText(df.format("hh:mma", pg.startDate) + " to " + df.format("hh:mma", pg.endDate));
                 source.setText(pg.source);
+
+                shareBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String shareBody = "Check out: " + pg.title
+                                + " on " +  df.format("EEEE, MMMM dd 'at' hh:mma", pg.startDate)
+                                + " at " + pg.subtitle
+                                + ".\n See details at www.sikh.events or in the Sikh Events App!";
+                        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+                        sharingIntent.setType("text/plain");
+                        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
+                        startActivity(Intent.createChooser(sharingIntent, "Share with"));
+                    }
+                });
+
             }
             return programView;
 

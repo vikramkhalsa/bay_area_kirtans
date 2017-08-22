@@ -60,6 +60,17 @@
                 android:tint="#595959"
                 android:layout_weight="1"
                 android:layout_gravity="center_horizontal" />
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxHeight="24dp"
+                android:id="@+id/shareBtn"
+                android:src="@drawable/ic_share_24dp"
+                android:background="#00ffffff"
+                android:cropToPadding="true"
+                android:tint="#595959"
+                android:layout_weight="1"
+                android:layout_gravity="center_horizontal" />
         </LinearLayout>
     </LinearLayout>
 
