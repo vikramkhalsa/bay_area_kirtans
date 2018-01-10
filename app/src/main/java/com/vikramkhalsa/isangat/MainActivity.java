@@ -90,10 +90,22 @@ public class MainActivity extends AppCompatActivity {
     @Override
    public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-
         inflater.inflate(R.menu.main_activity_bar, menu);
 
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.findItem(R.id.kathaBtn).setVisible(kathaCount >0);
+        menu.findItem(R.id.campBtn).setVisible(campCount >0);
+        menu.findItem(R.id.otherBtn).setVisible(otherCount >0);
+
+        menu.findItem(R.id.kirtanBtn).setTitle("Kirtan (" + kirtanCount + ")");
+        menu.findItem(R.id.kathaBtn).setTitle("Katha (" + kathaCount + ")");
+        menu.findItem(R.id.campBtn).setTitle("Camp (" + campCount + ")");
+        menu.findItem(R.id.otherBtn).setTitle("Other (" + otherCount + ")");
+        return super.onPrepareOptionsMenu(menu);
     }
 
 //filter event types based on user selection and show selection as checked
@@ -363,6 +375,12 @@ public class MainActivity extends AppCompatActivity {
         TextView title;
         TextView subtitle;
           }
+
+    public int kirtanCount = 0;
+    public int kathaCount = 0;
+    public int campCount = 0;
+    public int otherCount = 0;
+
     //gets json string and populates programs based on selected site
     public void PutJSON(String jsonStr){
         SimpleDateFormat sdf = new SimpleDateFormat();
@@ -376,6 +394,11 @@ public class MainActivity extends AppCompatActivity {
 //                 programs = obj.getJSONArray("programs");
 //            }
             Programs.clear();
+            kirtanCount = 0;
+            kathaCount = 0;
+            campCount = 0;
+            otherCount = 0;
+            invalidateOptionsMenu();
             //cadapter.clear();
             for(int i = 0; i < programs.length();i++) {
                 JSONObject program1 = programs.getJSONObject(i);
@@ -391,13 +414,32 @@ public class MainActivity extends AppCompatActivity {
                         temp_prog.startDate = sdf.parse(program1.getString("sd"));
                         temp_prog.endDate = sdf.parse(program1.getString("ed"));
                         temp_prog.id = program1.getInt("id");
-                        if(program1.has("type"))
+                        if(program1.has("type")) {
                             temp_prog.event_type = program1.getString("type");
+                            switch(temp_prog.event_type){
+                                case "kirtan":
+                                    kirtanCount++;
+                                    break;
+                                case "katha":
+                                    kathaCount++;
+                                    break;
+                                case "camp":
+                                    campCount++;
+                                    break;
+                                default:
+                                    otherCount++;
+                            }
+                        }else {
+                            kirtanCount++;
+                        }
                        // temp_prog.source = program1.getString("source");
                         if(program1.has("imageurl"))
                             temp_prog.imageurl = program1.getString("imageurl");
                         if(program1.has("siteurl"))
                             temp_prog.siteurl = program1.getString("siteurl");
+                        if(program1.has("allday")){
+                            temp_prog.allday = (1 == program1.getInt("allday"));
+                        }
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
@@ -469,6 +511,7 @@ public class MainActivity extends AppCompatActivity {
         public String event_type = "kirtan";
         public String imageurl = null;
         public String siteurl = null;
+        public Boolean allday = false;
     }
 
     //gets json data from vsk or sikh.events website and creates programs
@@ -589,7 +632,7 @@ public class MainActivity extends AppCompatActivity {
                 for (program p : tempList)
                 {
                     if(charText=="other"){ //for other, ignore kirtan and katha
-                        if (!(p.event_type.contains("kirtan") ||p.event_type.contains("katha")))
+                        if (!(p.event_type.contains("kirtan") ||p.event_type.contains("katha") ||p.event_type.contains("camp")))
                         {
                             Programs.add(p);
                         }
@@ -638,6 +681,7 @@ public class MainActivity extends AppCompatActivity {
 
             final program pg = getItem(position);
             if (pg!= null) {
+
 
                 //VewHolder holder = new ViewHolder();i
                 //LayoutInflater inflater = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -749,7 +793,8 @@ public class MainActivity extends AppCompatActivity {
                     date.setText(df.format("EEE, MMM dd", pg.startDate));
                 }
 
-               time.setText(df.format("hh:mma", pg.startDate) + " to " + df.format("hh:mma", pg.endDate));
+                if (!pg.allday)
+                    time.setText(df.format("hh:mma", pg.startDate) + " to " + df.format("hh:mma", pg.endDate));
                 source.setText(pg.source);
 
                 shareBtn.setOnClickListener(new View.OnClickListener() {
@@ -758,7 +803,7 @@ public class MainActivity extends AppCompatActivity {
                         String shareBody = "Check out: " + pg.title
                                 + " on " +  df.format("EEEE, MMMM dd 'at' hh:mma", pg.startDate)
                                 + " at " + pg.subtitle
-                                + ".\n See details at www.sikh.events or in the Sikh Events App!";
+                                + ".\n See details at www.sikh.events/eventdetails.php?id="+ pg.id+" or in the Sikh Events App!";
                         Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
                         sharingIntent.setType("text/plain");
                         sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);

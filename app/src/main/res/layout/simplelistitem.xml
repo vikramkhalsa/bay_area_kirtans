@@ -30,7 +30,6 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textSize="15dp"
-            android:text="3:00pm"
             android:paddingTop="10dp"/>
         <LinearLayout
             android:paddingTop="10dp"
